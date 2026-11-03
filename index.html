@@ -278,7 +278,7 @@
   #histList button:hover { border-color: var(--sky); background: rgba(95, 182, 240, 0.14); transform: translateY(-1px); }
   #histList .hash { color: var(--muted); }
 
-  footer { margin-top: 18px; font-size: 11px; line-height: 1.7; color: rgba(226, 236, 255, 0.5); }
+  footer { margin-top: 18px; font-size: 11px; line-height: 1.7; color: rgba(226, 236, 255, 0.58); }
   footer kbd {
     font-family: inherit; font-size: 10px;
     padding: 1.5px 5px; border-radius: 5px;
@@ -297,9 +297,17 @@
     .bg img { object-position: 50% 26%; }
     .scrim {
       background:
-        linear-gradient(to top, rgba(4, 7, 16, 0.92) 0%, rgba(4, 7, 16, 0.62) 34%, rgba(4, 7, 16, 0.08) 62%, rgba(4, 7, 16, 0.22) 100%);
+        linear-gradient(to top, rgba(4, 7, 16, 0.82) 0%, rgba(4, 7, 16, 0.48) 34%, rgba(4, 7, 16, 0.05) 62%, rgba(4, 7, 16, 0.20) 100%);
     }
-    .card { width: 100%; border-radius: 22px; background: rgba(9, 13, 24, 0.66); }
+    .card {
+      width: 100%;
+      border-radius: 22px;
+      background: linear-gradient(to top, rgba(8, 12, 22, 0.34), rgba(8, 12, 22, 0.24));
+      border-color: rgba(255, 255, 255, 0.20);
+      backdrop-filter: blur(30px) saturate(150%);
+      -webkit-backdrop-filter: blur(30px) saturate(150%);
+      box-shadow: 0 26px 60px -30px rgba(0, 0, 0, 0.85), 0 1px 0 rgba(255, 255, 255, 0.14) inset;
+    }
     .actions { justify-content: stretch; }
     .go { flex: 1; justify-content: center; }
   }
