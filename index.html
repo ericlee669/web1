@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pixiv 作品直达 · PID 跳转</title>
+<meta name="description" content="输入 Pixiv 作品 ID，一键跳转到 pixiv.net/artworks/ 作品页。" />
+<meta name="color-scheme" content="dark light" />
+<style>
+  :root {
+    --brand: #0096fa;
+    --brand-2: #45c8ff;
+    --bg: #070b16;
+    --card: rgba(17, 24, 40, 0.72);
+    --card-strong: rgba(21, 29, 48, 0.92);
+    --stroke: rgba(255, 255, 255, 0.09);
+    --stroke-strong: rgba(255, 255, 255, 0.16);
+    --text: #eaf0ff;
+    --muted: #93a0bd;
+    --field: rgba(255, 255, 255, 0.045);
+    --field-focus: rgba(0, 150, 250, 0.10);
+    --chip: rgba(255, 255, 255, 0.05);
+    --shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.9), 0 2px 0 rgba(255, 255, 255, 0.04) inset;
+    --danger: #ff6b81;
+    --ok: #37d3a2;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #eef3fb;
+      --card: rgba(255, 255, 255, 0.76);
+      --card-strong: rgba(255, 255, 255, 0.94);
+      --stroke: rgba(15, 23, 42, 0.08);
+      --stroke-strong: rgba(15, 23, 42, 0.16);
+      --text: #0f172a;
+      --muted: #5a6b8c;
+      --field: rgba(255, 255, 255, 0.75);
+      --field-focus: rgba(0, 150, 250, 0.08);
+      --chip: rgba(15, 23, 42, 0.04);
+      --shadow: 0 30px 70px -34px rgba(15, 23, 42, 0.45), 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+      --danger: #e0344f;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    display: grid;
+    place-items: center;
+    padding: clamp(18px, 5vw, 56px);
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ---------- ambient background ---------- */
+  .aura {
+    position: fixed;
+    inset: -20vmax;
+    z-index: 0;
+    pointer-events: none;
+    filter: blur(90px) saturate(120%);
+    opacity: 0.75;
+  }
+  .aura span {
+    position: absolute;
+    display: block;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+    animation: drift 22s ease-in-out infinite alternate;
+  }
+  .aura .a1 { width: 46vmax; height: 46vmax; left: 6%;  top: 4%;  background: radial-gradient(circle at 30% 30%, #0096fa, transparent 68%); }
+  .aura .a2 { width: 40vmax; height: 40vmax; right: 2%; top: 26%; background: radial-gradient(circle at 60% 40%, #7a5cff, transparent 66%); animation-delay: -7s; }
+  .aura .a3 { width: 38vmax; height: 38vmax; left: 24%; bottom: -8%; background: radial-gradient(circle at 50% 50%, #26e0d0, transparent 64%); animation-delay: -13s; opacity: 0.6; }
+
+  @keyframes drift {
+    from { transform: translate3d(-2%, -1%, 0) scale(1); }
+    to   { transform: translate3d(3%, 4%, 0) scale(1.12); }
+  }
+
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.14) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 78%);
+  }
+
+  /* ---------- card ---------- */
+  .card {
+    position: relative;
+    z-index: 2;
+    width: min(680px, 100%);
+    min-width: 0;
+    max-width: 100%;
+    padding: clamp(24px, 3.4vw, 40px);
+    border: 1px solid var(--stroke);
+    border-radius: 26px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    animation: rise 0.7s cubic-bezier(0.16, 0.84, 0.28, 1) both;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(140deg, rgba(0, 150, 250, 0.65), transparent 38%, transparent 62%, rgba(122, 92, 255, 0.45));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.55;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px) scale(0.985); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ---------- header ---------- */
+  header { display: flex; align-items: center; gap: 14px; }
+
+  .mark {
+    flex: none;
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: linear-gradient(140deg, var(--brand), var(--brand-2));
+    box-shadow: 0 14px 30px -14px rgba(0, 150, 250, 0.95);
+    color: #fff;
+    font-size: 26px;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: -0.02em;
+    user-select: none;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(19px, 2.4vw, 23px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .sub {
+    margin: 5px 0 0;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+  .sub code {
+    font-family: ui-monospace, "JetBrains Mono", Consolas, monospace;
+    font-size: 12.5px;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--chip);
+    border: 1px solid var(--stroke);
+  }
+
+  /* ---------- form ---------- */
+  form { margin-top: clamp(22px, 3vw, 30px); }
+
+  .field {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 14px;
+    height: 66px;
+    border-radius: 17px;
+    background: var(--field);
+    border: 1px solid var(--stroke-strong);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    cursor: text;
+  }
+  .field:focus-within {
+    border-color: var(--brand);
+    background: var(--field-focus);
+    box-shadow: 0 0 0 4px rgba(0, 150, 250, 0.16);
+  }
+  .field.invalid { border-color: var(--danger); box-shadow: 0 0 0 4px rgba(255, 107, 129, 0.14); }
+  .field.shake { animation: shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+  @keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+  }
+
+  .prefix {
+    font-family: ui-monospace, "JetBrains Mono", Consolas, monospace;
+    font-size: clamp(12px, 1.9vw, 15px);
+    color: var(--muted);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  #pid {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 4px 0 2px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-family: ui-monospace, "JetBrains Mono", Consolas, monospace;
+    font-size: clamp(19px, 3vw, 24px);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    outline: none;
+  }
+  #pid::placeholder { color: var(--muted); opacity: 0.55; font-weight: 500; }
+
+  .clear {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: var(--chip);
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+  .clear[hidden] { display: none; }
+  .clear:hover { color: var(--text); background: var(--stroke-strong); transform: rotate(90deg); }
+
+  .err {
+    min-height: 20px;
+    margin: 8px 2px 0;
+    font-size: 12.5px;
+    color: var(--danger);
+    opacity: 0;
+    transform: translateY(-2px);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+  }
+  .err.show { opacity: 1; transform: none; }
+
+  /* ---------- actions ---------- */
+  .actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .track {
+    width: 38px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--chip);
+    border: 1px solid var(--stroke-strong);
+    position: relative;
+    transition: background 0.18s ease, border-color 0.18s ease;
+  }
+  .thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s ease;
+  }
+  .switch input:checked + .track { background: rgba(0, 150, 250, 0.28); border-color: var(--brand); }
+  .switch input:checked + .track .thumb { transform: translateX(16px); background: var(--brand-2); }
+  .switch input:focus-visible + .track { box-shadow: 0 0 0 4px rgba(0, 150, 250, 0.2); }
+
+  .go {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 15px 24px;
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0096fa, #3ec6ff 85%);
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    box-shadow: 0 16px 32px -16px rgba(0, 150, 250, 0.95);
+    transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+  }
+  .go svg { transition: transform 0.18s ease; }
+  .go:hover { transform: translateY(-1.5px); filter: brightness(1.06); box-shadow: 0 20px 38px -16px rgba(0, 150, 250, 1); }
+  .go:hover svg { transform: translateX(3px); }
+  .go:active { transform: translateY(0) scale(0.985); }
+  .go:focus-visible { outline: 3px solid rgba(62, 198, 255, 0.55); outline-offset: 3px; }
+
+  /* ---------- history ---------- */
+  .history {
+    margin-top: 26px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--stroke-strong);
+    animation: rise 0.4s ease both;
+  }
+  .hist-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .hist-head h2 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .hist-head button {
+    border: 0;
+    background: none;
+    padding: 2px 4px;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: color 0.15s ease;
+  }
+  .hist-head button:hover { color: var(--danger); }
+
+  #histList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  #histList button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--stroke-strong);
+    background: var(--chip);
+    color: var(--text);
+    font-family: ui-monospace, "JetBrains Mono", Consolas, monospace;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  }
+  #histList button:hover { border-color: var(--brand); background: rgba(0, 150, 250, 0.12); transform: translateY(-1px); }
+  #histList .hash { color: var(--muted); }
+
+  /* ---------- footer ---------- */
+  footer {
+    margin-top: 22px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--muted);
+    text-align: center;
+  }
+  footer kbd {
+    font-family: inherit;
+    font-size: 11px;
+    padding: 1.5px 6px;
+    border-radius: 5px;
+    border: 1px solid var(--stroke-strong);
+    background: var(--chip);
+    color: var(--text);
+  }
+
+  @media (max-width: 520px) {
+    body { padding: 16px; }
+    .field { height: 60px; padding: 0 12px; }
+    .prefix { font-size: 11px; }
+    .actions { justify-content: stretch; }
+    .go { flex: 1; justify-content: center; }
+    .card { border-radius: 22px; padding: 22px; }
+    header { gap: 11px; }
+    .mark { width: 44px; height: 44px; border-radius: 13px; font-size: 22px; }
+    #pid { font-size: 17px; }
+  }
+
+  @media (max-width: 380px) {
+    .prefix { font-size: 10px; letter-spacing: -0.02em; }
+    .sub code { font-size: 11px; }
+    footer { font-size: 11px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="aura" aria-hidden="true"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <main class="card">
+    <header>
+      <div class="mark" aria-hidden="true">p</div>
+      <div>
+        <h1>Pixiv 作品直达</h1>
+        <p class="sub">输入作品 ID，立即前往 <code>pixiv.net/artworks/…</code></p>
+      </div>
+    </header>
+
+    <form id="form" novalidate>
+      <label class="field" id="field" for="pid">
+        <span class="prefix">pixiv.net/artworks/</span>
+        <input id="pid" name="pid" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off"
+               spellcheck="false" placeholder="123456789" aria-describedby="err" autofocus />
+        <button class="clear" id="clear" type="button" hidden aria-label="清空输入">×</button>
+      </label>
+      <p class="err" id="err" role="alert" aria-live="polite"></p>
+
+      <div class="actions">
+        <label class="switch" for="newtab">
+          <input type="checkbox" id="newtab" />
+          <span class="track"><span class="thumb"></span></span>
+          <span>在新标签页打开</span>
+        </label>
+        <button class="go" type="submit">
+          前往作品
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h13" /><path d="m12 5 7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </form>
+
+    <section class="history" id="history" hidden>
+      <div class="hist-head">
+        <h2>最近打开</h2>
+        <button type="button" id="clearHist">清空</button>
+      </div>
+      <ul id="histList"></ul>
+    </section>
+
+    <footer>
+      按 <kbd>Enter</kbd> 直接打开 · 可粘贴完整作品链接自动识别 ID<br />
+      浏览 Pixiv 需要账号登录，部分地区可能需网络代理
+    </footer>
+  </main>
+
+<script>
+(function () {
+  "use strict";
+
+  var BASE = "https://www.pixiv.net/artworks/";
+  var STORE = "pixiv-jump.history.v1";
+  var MAX_HISTORY = 8;
+
+  var form = document.getElementById("form");
+  var field = document.getElementById("field");
+  var input = document.getElementById("pid");
+  var errEl = document.getElementById("err");
+  var clearBtn = document.getElementById("clear");
+  var newTab = document.getElementById("newtab");
+  var historyEl = document.getElementById("history");
+  var histList = document.getElementById("histList");
+  var clearHist = document.getElementById("clearHist");
+
+  var STORE_NEWTAB = "pixiv-jump.newtab.v1";
+
+  /* ----- storage ----- */
+  function readHistory() {
+    try {
+      var raw = localStorage.getItem(STORE);
+      var list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list.filter(function (id) { return /^\d+$/.test(id); }) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeHistory(list) {
+    try { localStorage.setItem(STORE, JSON.stringify(list)); } catch (e) { /* 隐私模式忽略 */ }
+  }
+
+  function remember(id) {
+    var list = readHistory().filter(function (x) { return x !== id; });
+    list.unshift(id);
+    list = list.slice(0, MAX_HISTORY);
+    writeHistory(list);
+    renderHistory();
+  }
+
+  /* ----- 解析：支持纯 ID、作品链接、带 _p0 的地址 ----- */
+  function parseId(raw) {
+    if (!raw) return "";
+    var value = String(raw).trim();
+    if (!value) return "";
+    var byUrl = value.match(/artworks\/(\d{1,12})/i);
+    if (byUrl) return byUrl[1];
+    var byQuery = value.match(/[?&#]illust_id=(\d{1,12})/i);
+    if (byQuery) return byQuery[1];
+    var byDigits = value.match(/\d{1,12}/);
+    return byDigits ? byDigits[0] : "";
+  }
+
+  function showError(message) {
+    errEl.textContent = message;
+    errEl.classList.add("show");
+    field.classList.add("invalid", "shake");
+    window.setTimeout(function () { field.classList.remove("shake"); }, 460);
+    input.focus();
+  }
+
+  function clearError() {
+    errEl.classList.remove("show");
+    field.classList.remove("invalid");
+  }
+
+  function open(id) {
+    var url = BASE + id;
+    remember(id);
+    if (newTab.checked) {
+      var win = window.open(url, "_blank", "noopener");
+      if (!win) window.location.href = url;
+    } else {
+      window.location.href = url;
+    }
+  }
+
+  /* ----- 渲染历史 ----- */
+  function renderHistory() {
+    var list = readHistory();
+    histList.textContent = "";
+    if (!list.length) {
+      historyEl.hidden = true;
+      return;
+    }
+    historyEl.hidden = false;
+    list.forEach(function (id) {
+      var li = document.createElement("li");
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.title = BASE + id;
+      var hash = document.createElement("span");
+      hash.className = "hash";
+      hash.textContent = "#";
+      btn.appendChild(hash);
+      btn.appendChild(document.createTextNode(id));
+      btn.addEventListener("click", function () { open(id); });
+      li.appendChild(btn);
+      histList.appendChild(li);
+    });
+  }
+
+  /* ----- 事件 ----- */
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    clearError();
+    var id = parseId(input.value);
+    if (!id) {
+      showError("请输入作品 ID（纯数字，或直接粘贴作品链接）");
+      return;
+    }
+    input.value = id;
+    open(id);
+  });
+
+  input.addEventListener("input", function () {
+    var value = input.value;
+    var id = parseId(value);
+    if (id && /[\/a-z?=]/i.test(value.trim())) {
+      // 粘贴了完整链接：即时归一成纯 ID，方便确认
+      input.value = id;
+    }
+    clearBtn.hidden = !input.value;
+    clearError();
+  });
+
+  input.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      input.value = "";
+      clearBtn.hidden = true;
+      clearError();
+    }
+  });
+
+  clearBtn.addEventListener("click", function () {
+    input.value = "";
+    clearBtn.hidden = true;
+    clearError();
+    input.focus();
+  });
+
+  clearHist.addEventListener("click", function () {
+    writeHistory([]);
+    renderHistory();
+    input.focus();
+  });
+
+  try {
+    newTab.checked = localStorage.getItem(STORE_NEWTAB) === "1";
+  } catch (e) { /* ignore */ }
+  newTab.addEventListener("change", function () {
+    try { localStorage.setItem(STORE_NEWTAB, newTab.checked ? "1" : "0"); } catch (e) { /* ignore */ }
+  });
+
+  renderHistory();
+})();
+</script>
+</body>
+</html>
