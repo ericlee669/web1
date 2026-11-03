@@ -36,24 +36,21 @@
   body {
     margin: 0;
     min-height: 100dvh;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: center;
-    justify-items: start;
-    padding: clamp(18px, 5vw, 80px);
     background: #060a14;
     color: var(--ink);
     font-family: "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ---------- card position (set from Settings) ---------- */
-  body[data-h="left"]   { justify-items: start; }
-  body[data-h="center"] { justify-items: center; }
-  body[data-h="right"]  { justify-items: end; }
-  body[data-v="top"]    { align-items: start; }
-  body[data-v="middle"] { align-items: center; }
-  body[data-v="bottom"] { align-items: end; }
+  /* ---------- stage: the free area the card can be placed in ---------- */
+  .stage {
+    position: relative;
+    min-height: 100dvh;
+    padding: clamp(18px, 5vw, 80px);
+  }
+  @media (max-width: 780px) {
+    .stage { padding: 0 max(12px, env(safe-area-inset-left)) max(14px, env(safe-area-inset-bottom)); }
+  }
 
   /* ---------- full-bleed artwork ---------- */
   .bg { position: fixed; inset: 0; z-index: -2; overflow: hidden; background: #060a14; }
@@ -76,7 +73,9 @@
 
   /* ---------- glass card ---------- */
   .card {
-    position: relative;
+    position: absolute;
+    left: 0;
+    top: 0;
     width: min(452px, 100%);
     padding: clamp(22px, 2.6vw, 34px);
     border-radius: 24px;
@@ -86,13 +85,11 @@
     box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.10) inset;
     backdrop-filter: blur(28px) saturate(140%);
     -webkit-backdrop-filter: blur(28px) saturate(140%);
-    animation: rise 0.75s cubic-bezier(0.16, 0.84, 0.28, 1) both;
+    animation: fade 0.6s ease both;
+    will-change: left, top;
   }
 
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(18px) scale(0.99); }
-    to { opacity: 1; transform: none; }
-  }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
   .badge {
     display: inline-flex;
@@ -333,16 +330,18 @@
     z-index: 45;
     top: max(66px, calc(env(safe-area-inset-top) + 60px));
     right: max(14px, env(safe-area-inset-right));
-    width: min(310px, calc(100vw - 28px));
+    width: min(322px, calc(100vw - 28px));
     padding: 18px;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(9, 14, 26, 0.86);
+    background: rgba(9, 14, 26, 0.88);
     backdrop-filter: blur(26px) saturate(150%);
     -webkit-backdrop-filter: blur(26px) saturate(150%);
     box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.95);
     color: var(--ink);
     animation: pop 0.22s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+    max-height: calc(100dvh - 80px);
+    overflow-y: auto;
   }
   .settings[hidden] { display: none; }
   @keyframes pop {
@@ -363,16 +362,6 @@
   .row + .row { border-top: 1px solid rgba(255, 255, 255, 0.07); }
   .row-label { font-size: 12px; color: var(--muted); flex: none; }
 
-  .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); }
-  .seg button {
-    border: 0; background: none; color: var(--muted);
-    font-family: inherit; font-size: 11.5px;
-    padding: 5px 10px; border-radius: 7px; cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
-  }
-  .seg button:hover { color: var(--ink); }
-  .seg button.on { background: rgba(95, 182, 240, 0.28); color: #fff; }
-
   .file-btn {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 6px 11px; border-radius: 9px;
@@ -388,24 +377,31 @@
   }
   .mini:hover { color: var(--ink); background: var(--chip); }
 
-  .alpha-wrap { display: inline-flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; }
+  .slider-row { padding: 10px 0; }
+  .slider-row + .slider-row { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+  .slider-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 3px; }
+  .slider-head .row-label { font-size: 12px; }
+  .slider-val { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
   input[type="range"] {
     -webkit-appearance: none; appearance: none;
-    width: 118px; height: 3px; border-radius: 3px;
-    background: rgba(255, 255, 255, 0.22);
-    outline: none;
+    width: 100%; height: 4px; border-radius: 4px;
+    background: linear-gradient(90deg, rgba(143, 214, 255, 0.65), rgba(255, 255, 255, 0.18));
+    outline: none; margin: 8px 0 2px;
   }
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
-    width: 14px; height: 14px; border-radius: 50%;
-    background: var(--sky-2); border: 0; cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    width: 15px; height: 15px; border-radius: 50%;
+    background: #fff; border: 0; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
   }
   input[type="range"]::-moz-range-thumb {
-    width: 14px; height: 14px; border: 0; border-radius: 50%;
-    background: var(--sky-2); cursor: pointer;
+    width: 15px; height: 15px; border: 0; border-radius: 50%;
+    background: #fff; cursor: pointer;
   }
-  #alphaOut { font-size: 11px; color: var(--muted); width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+  input[type="range"]:focus-visible { outline: 2px solid rgba(143, 214, 255, 0.6); outline-offset: 4px; }
+
+  .alpha-line { display: flex; align-items: center; gap: 10px; }
+  #alphaOut { font-size: 11px; color: var(--muted); width: 36px; text-align: right; font-variant-numeric: tabular-nums; }
 
   .reset {
     width: 100%; margin-top: 14px; padding: 9px;
@@ -421,11 +417,6 @@
 
   /* ---------- phone ---------- */
   @media (max-width: 780px) {
-    body {
-      align-items: end;
-      justify-items: center;
-      padding: 0 max(12px, env(safe-area-inset-left)) max(14px, env(safe-area-inset-bottom));
-    }
     .bg img { object-position: 50% 26%; }
     .scrim {
       background:
@@ -490,79 +481,79 @@
       </span>
     </div>
 
-    <div class="row">
-      <span class="row-label">卡片左右</span>
-      <div class="seg" id="segH" role="group" aria-label="卡片水平位置">
-        <button type="button" data-val="left">左</button>
-        <button type="button" data-val="center">中</button>
-        <button type="button" data-val="right">右</button>
+    <div class="slider-row">
+      <div class="slider-head">
+        <span class="row-label">卡片水平位置</span>
+        <span class="slider-val" id="posXOut">0</span>
       </div>
+      <input type="range" id="posX" min="0" max="99" step="1" value="0" aria-label="卡片水平位置 0 到 99" />
     </div>
 
-    <div class="row">
-      <span class="row-label">卡片上下</span>
-      <div class="seg" id="segV" role="group" aria-label="卡片垂直位置">
-        <button type="button" data-val="top">上</button>
-        <button type="button" data-val="middle">中</button>
-        <button type="button" data-val="bottom">下</button>
+    <div class="slider-row">
+      <div class="slider-head">
+        <span class="row-label">卡片垂直位置</span>
+        <span class="slider-val" id="posYOut">100</span>
       </div>
+      <input type="range" id="posY" min="0" max="99" step="1" value="99" aria-label="卡片垂直位置 0 到 99" />
     </div>
 
-    <div class="row">
-      <span class="row-label">不透明度</span>
-      <span class="alpha-wrap">
-        <input type="range" id="alpha" min="0.1" max="0.95" step="0.05" value="0.34" aria-label="卡片不透明度" />
-        <output id="alphaOut">34%</output>
-      </span>
+    <div class="slider-row">
+      <div class="slider-head">
+        <span class="row-label">卡片不透明度</span>
+        <span class="slider-val" id="alphaOut">34%</span>
+      </div>
+      <input type="range" id="alpha" min="10" max="95" step="1" value="34" aria-label="卡片不透明度百分比" />
     </div>
 
     <button class="reset" id="resetAll" type="button">恢复全部默认</button>
-    <p class="hint">设置只保存在本机浏览器，换设备需要重新设置。手机上「左右」不影响宽度。</p>
+    <p class="hint">滑块范围 0–99，共 100 个挡位（0 = 最左/最上，99 = 最右/最下）。设置只保存在本机浏览器。</p>
   </div>
 
-  <main class="card">
-    <span class="badge"><i></i>Pixiv Artwork</span>
-    <h1>作品直达</h1>
-    <p class="sub">输入作品 ID，一步抵达原作图页</p>
+  <div class="stage" id="stage">
+    <main class="card" id="card">
+      <span class="badge"><i></i>Pixiv Artwork</span>
+      <h1>作品直达</h1>
+      <p class="sub">输入作品 ID，一步抵达原作图页</p>
 
-    <form id="form" novalidate>
-      <label class="field" id="field" for="pid">
-        <span class="prefix">pixiv.net/artworks/</span>
-        <input id="pid" name="pid" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off"
-               spellcheck="false" placeholder="123456789" aria-describedby="err" autofocus />
-        <button class="clear" id="clear" type="button" hidden aria-label="清空输入">×</button>
-      </label>
-      <p class="err" id="err" role="alert" aria-live="polite"></p>
-
-      <div class="actions">
-        <label class="switch" for="newtab">
-          <input type="checkbox" id="newtab" />
-          <span class="track"><span class="thumb"></span></span>
-          <span>在新标签页打开</span>
+      <form id="form" novalidate>
+        <label class="field" id="field" for="pid">
+          <span class="prefix">pixiv.net/artworks/</span>
+          <input id="pid" name="pid" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off"
+                 spellcheck="false" placeholder="123456789" aria-describedby="err" autofocus />
+          <button class="clear" id="clear" type="button" hidden aria-label="清空输入">×</button>
         </label>
-        <button class="go" type="submit">
-          前往作品
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M5 12h13" /><path d="m12 5 7 7-7 7" />
-          </svg>
-        </button>
-      </div>
-    </form>
+        <p class="err" id="err" role="alert" aria-live="polite"></p>
 
-    <section class="history" id="history" hidden>
-      <div class="hist-head">
-        <h2>最近打开</h2>
-        <button type="button" id="clearHist">清空</button>
-      </div>
-      <ul id="histList"></ul>
-    </section>
+        <div class="actions">
+          <label class="switch" for="newtab">
+            <input type="checkbox" id="newtab" />
+            <span class="track"><span class="thumb"></span></span>
+            <span>在新标签页打开</span>
+          </label>
+          <button class="go" type="submit">
+            前往作品
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h13" /><path d="m12 5 7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </form>
 
-    <footer>
-      按 <kbd>Enter</kbd> 直接打开 · 可粘贴完整作品链接自动识别 ID<br />
-      浏览 Pixiv 需要账号登录，部分地区可能需网络代理
-    </footer>
-  </main>
+      <section class="history" id="history" hidden>
+        <div class="hist-head">
+          <h2>最近打开</h2>
+          <button type="button" id="clearHist">清空</button>
+        </div>
+        <ul id="histList"></ul>
+      </section>
+
+      <footer>
+        按 <kbd>Enter</kbd> 直接打开 · 可粘贴完整作品链接自动识别 ID<br />
+        浏览 Pixiv 需要账号登录，部分地区可能需网络代理
+      </footer>
+    </main>
+  </div>
 
 <script>
 (function () {
@@ -684,25 +675,91 @@
   renderHistory();
 
   /* ================= 外观设置 ================= */
-  var PREF_KEY = "pixiv-jump.prefs.v1";
+  var PREF_KEY = "pixiv-jump.prefs.v2";
   var DEFAULT_DESKTOP = "cover-desktop.webp";
   var DEFAULT_MOBILE = "cover-mobile.webp";
+
   var bgImg = document.getElementById("bgImg");
+  var stage = document.getElementById("stage");
+  var card = document.getElementById("card");
+  var gearBtn = document.getElementById("settingsBtn");
+  var panel = document.getElementById("settingsPanel");
+
   var mq = window.matchMedia("(max-width: 780px)");
 
-  var prefs = { h: null, v: null, alpha: null };
+  var posXInput = document.getElementById("posX");
+  var posYInput = document.getElementById("posY");
+  var posXOut = document.getElementById("posXOut");
+  var posYOut = document.getElementById("posYOut");
+  var alphaInput = document.getElementById("alpha");
+  var alphaOut = document.getElementById("alphaOut");
+
+  /* x / y are integers 0..99                 */
+  /* null means "use the responsive default" */
+  var prefs = { x: null, y: null, alpha: null };
+
+  function defaultAlpha() { return mq.matches ? 34 : 68; }
+  function defaultX() { return 0; }
+  function defaultY() { return mq.matches ? 99 : 50; }
+
   try {
     var saved = JSON.parse(localStorage.getItem(PREF_KEY) || "null");
-    if (saved && typeof saved === "object") prefs = { h: saved.h || null, v: saved.v || null, alpha: typeof saved.alpha === "number" ? saved.alpha : null };
+    if (saved && typeof saved === "object") {
+      prefs.x = isStep(saved.x) ? saved.x : null;
+      prefs.y = isStep(saved.y) ? saved.y : null;
+      prefs.alpha = isStep(saved.alpha) ? saved.alpha : null;
+    }
   } catch (e) {}
 
-  var customBg = null;
-
+  function isStep(v) { return typeof v === "number" && isFinite(v) && v >= 0 && v <= 99; }
   function savePrefs() {
     try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {}
   }
+  function stepX() { return prefs.x == null ? defaultX() : prefs.x; }
+  function stepY() { return prefs.y == null ? defaultY() : prefs.y; }
+  function stepAlpha() { return prefs.alpha == null ? defaultAlpha() : prefs.alpha; }
 
-  /* --- tiny IndexedDB store for the custom image (localStorage is too small) --- */
+  /* --- place the card inside the free space of the stage --- */
+  function placeCard() {
+    var cs = getComputedStyle(stage);
+    var padL = parseFloat(cs.paddingLeft) || 0;
+    var padT = parseFloat(cs.paddingTop) || 0;
+    var padR = parseFloat(cs.paddingRight) || 0;
+    var padB = parseFloat(cs.paddingBottom) || 0;
+
+    var innerW = stage.clientWidth - padL - padR;
+    var innerH = stage.clientHeight - padT - padB;
+
+    /* the card never gets wider than the free area (no horizontal overflow) */
+    var targetW = Math.min(452, innerW);
+    card.style.width = Math.round(targetW) + "px";
+
+    var cw = card.offsetWidth;
+    var ch = card.offsetHeight;
+
+    var freeX = Math.max(0, innerW - cw);
+    var freeY = Math.max(0, innerH - ch);
+
+    var x = padL + freeX * (stepX() / 99);
+    var y = padT + freeY * (stepY() / 99);
+
+    card.style.left = Math.round(x) + "px";
+    card.style.top = Math.round(y) + "px";
+    /* keep the document scrollable if the card is taller than the stage */
+    stage.style.minHeight = Math.max(window.innerHeight, ch + padT + padB) + "px";
+  }
+
+  /* --- alpha --- */
+  function applyAlpha() {
+    var a = stepAlpha() / 100;
+    document.documentElement.style.setProperty("--card-a", String(a));
+    alphaInput.value = String(stepAlpha());
+    alphaOut.textContent = stepAlpha() + "%";
+  }
+
+  /* --- background --- */
+  var customBg = null;
+
   function idb(mode, handler) {
     return new Promise(function (resolve, reject) {
       if (!("indexedDB" in window)) { reject(new Error("no idb")); return; }
@@ -713,8 +770,7 @@
         var db = req.result;
         try {
           var tx = db.transaction("kv", mode);
-          var store = tx.objectStore("kv");
-          var r = handler(store);
+          var r = handler(tx.objectStore("kv"));
           tx.oncomplete = function () { db.close(); resolve(r && r.result); };
           tx.onerror = function () { db.close(); reject(tx.error); };
         } catch (e) { db.close(); reject(e); }
@@ -728,59 +784,7 @@
   function applyBg() {
     bgImg.src = customBg || (mq.matches ? DEFAULT_MOBILE : DEFAULT_DESKTOP);
   }
-  if (mq.addEventListener) mq.addEventListener("change", applyBg);
-  else if (mq.addListener) mq.addListener(applyBg);
 
-  function applyPosition() {
-    if (prefs.h) document.body.setAttribute("data-h", prefs.h);
-    else document.body.removeAttribute("data-h");
-    if (prefs.v) document.body.setAttribute("data-v", prefs.v);
-    else document.body.removeAttribute("data-v");
-    markSeg("segH", prefs.h);
-    markSeg("segV", prefs.v);
-  }
-  function markSeg(id, val) {
-    var seg = document.getElementById(id);
-    Array.prototype.forEach.call(seg.querySelectorAll("button"), function (b) {
-      b.classList.toggle("on", b.getAttribute("data-val") === val);
-    });
-  }
-
-  var alphaInput = document.getElementById("alpha");
-  var alphaOut = document.getElementById("alphaOut");
-  function currentAlpha() {
-    if (prefs.alpha != null) return prefs.alpha;
-    return mq.matches ? 0.34 : 0.68;
-  }
-  function applyAlpha() {
-    var a = currentAlpha();
-    document.documentElement.style.setProperty("--card-a", String(a));
-    alphaInput.value = String(a);
-    alphaOut.textContent = Math.round(a * 100) + "%";
-  }
-
-  document.getElementById("segH").addEventListener("click", function (e) {
-    var b = e.target.closest("button[data-val]");
-    if (!b) return;
-    var val = b.getAttribute("data-val");
-    prefs.h = prefs.h === val ? null : val;
-    savePrefs(); applyPosition();
-  });
-  document.getElementById("segV").addEventListener("click", function (e) {
-    var b = e.target.closest("button[data-val]");
-    if (!b) return;
-    var val = b.getAttribute("data-val");
-    prefs.v = prefs.v === val ? null : val;
-    savePrefs(); applyPosition();
-  });
-
-  alphaInput.addEventListener("input", function () {
-    prefs.alpha = Number(alphaInput.value);
-    applyAlpha();
-    savePrefs();
-  });
-
-  /* --- custom background image --- */
   function downscale(file, cb) {
     var url = URL.createObjectURL(file);
     var img = new Image();
@@ -799,6 +803,25 @@
     img.src = url;
   }
 
+  /* --- controls --- */
+  posXInput.addEventListener("input", function () {
+    prefs.x = Number(posXInput.value);
+    posXOut.textContent = String(prefs.x);
+    placeCard();
+    savePrefs();
+  });
+  posYInput.addEventListener("input", function () {
+    prefs.y = Number(posYInput.value);
+    posYOut.textContent = String(prefs.y);
+    placeCard();
+    savePrefs();
+  });
+  alphaInput.addEventListener("input", function () {
+    prefs.alpha = Number(alphaInput.value);
+    applyAlpha();
+    savePrefs();
+  });
+
   document.getElementById("bgFile").addEventListener("change", function (e) {
     var file = e.target.files && e.target.files[0];
     if (!file) return;
@@ -806,7 +829,8 @@
       if (!dataUrl) return;
       customBg = dataUrl;
       applyBg();
-      bgSave(dataUrl).catch(function () { /* 存不下就只在本次有效 */ });
+      bgSave(dataUrl).catch(function () {});
+      placeCard();
     });
     e.target.value = "";
   });
@@ -815,21 +839,30 @@
     customBg = null;
     applyBg();
     bgClear().catch(function () {});
+    placeCard();
   });
 
   document.getElementById("resetAll").addEventListener("click", function () {
-    prefs = { h: null, v: null, alpha: null };
+    prefs = { x: null, y: null, alpha: null };
     savePrefs();
     customBg = null;
     bgClear().catch(function () {});
     applyBg();
-    applyPosition();
+    syncControls();
     applyAlpha();
+    placeCard();
   });
 
-  /* --- panel open/close --- */
-  var gearBtn = document.getElementById("settingsBtn");
-  var panel = document.getElementById("settingsPanel");
+  function syncControls() {
+    posXInput.value = String(stepX());
+    posYInput.value = String(stepY());
+    posXOut.textContent = String(stepX());
+    posYOut.textContent = String(stepY());
+    alphaInput.value = String(stepAlpha());
+    alphaOut.textContent = stepAlpha() + "%";
+  }
+
+  /* --- panel --- */
   function setOpen(open) {
     panel.hidden = !open;
     gearBtn.setAttribute("aria-expanded", open ? "true" : "false");
@@ -845,12 +878,34 @@
     setOpen(false);
   });
 
+  /* --- re-place on resize / rotation / mq change --- */
+  function relayout() {
+    if (prefs.x == null && prefs.y == null) syncControls();
+    applyBg();
+    applyAlpha();
+    placeCard();
+  }
+  var rt;
+  window.addEventListener("resize", function () {
+    clearTimeout(rt);
+    rt = setTimeout(relayout, 80);
+  });
+  window.addEventListener("orientationchange", function () { setTimeout(relayout, 200); });
+  if (mq.addEventListener) mq.addEventListener("change", relayout);
+  else if (mq.addListener) mq.addListener(relayout);
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () { placeCard(); }).observe(card);
+  }
+  window.addEventListener("load", placeCard);
+
   /* --- boot --- */
-  applyPosition();
+  syncControls();
   applyAlpha();
   applyBg();
+  placeCard();
   bgLoad().then(function (data) {
-    if (data) { customBg = data; applyBg(); }
+    if (data) { customBg = data; applyBg(); placeCard(); }
   }).catch(function () {});
 })();
 </script>
