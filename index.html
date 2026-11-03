@@ -7,30 +7,37 @@
 <meta name="description" content="输入 Pixiv 作品 ID，一键跳转到 pixiv.net/artworks/ 作品页。" />
 <meta name="color-scheme" content="dark" />
 <meta name="theme-color" content="#060a14" />
-<link rel="preload" as="image" href="cover-desktop.webp" media="(min-width: 781px)" />
-<link rel="preload" as="image" href="cover-mobile.webp" media="(max-width: 780px)" />
+<link rel="preload" as="image" href="cover-desktop.webp" />
 <style>
   :root {
     --sky: #5fb6f0;
     --sky-2: #8fd6ff;
-    --pink: #ff7fa4;
     --ink: #f2f6ff;
     --muted: rgba(226, 236, 255, 0.62);
     --line: rgba(255, 255, 255, 0.14);
-    --card: rgba(10, 15, 28, 0.68);
-    --field: rgba(255, 255, 255, 0.07);
     --chip: rgba(255, 255, 255, 0.07);
     --danger: #ff8298;
+    --card-a: 0.68;
+    --card-ink: 8 12 22;
+  }
+
+  @media (max-width: 780px) {
+    :root { --card-a: 0.34; }
   }
 
   * { box-sizing: border-box; }
 
-  html, body { min-height: 100%; }
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
 
   body {
     margin: 0;
     min-height: 100dvh;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
     justify-items: start;
     padding: clamp(18px, 5vw, 80px);
@@ -38,8 +45,15 @@
     color: var(--ink);
     font-family: "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
   }
+
+  /* ---------- card position (set from Settings) ---------- */
+  body[data-h="left"]   { justify-items: start; }
+  body[data-h="center"] { justify-items: center; }
+  body[data-h="right"]  { justify-items: end; }
+  body[data-v="top"]    { align-items: start; }
+  body[data-v="middle"] { align-items: center; }
+  body[data-v="bottom"] { align-items: end; }
 
   /* ---------- full-bleed artwork ---------- */
   .bg { position: fixed; inset: 0; z-index: -2; overflow: hidden; background: #060a14; }
@@ -66,11 +80,12 @@
     width: min(452px, 100%);
     padding: clamp(22px, 2.6vw, 34px);
     border-radius: 24px;
-    background: var(--card);
-    border: 1px solid var(--line);
+    background: rgba(var(--card-ink), 0.68);
+    background: linear-gradient(to top, rgb(var(--card-ink) / var(--card-a)), rgb(var(--card-ink) / calc(var(--card-a) * 0.72)));
+    border: 1px solid rgba(255, 255, 255, 0.17);
     box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.10) inset;
-    backdrop-filter: blur(22px) saturate(135%);
-    -webkit-backdrop-filter: blur(22px) saturate(135%);
+    backdrop-filter: blur(28px) saturate(140%);
+    -webkit-backdrop-filter: blur(28px) saturate(140%);
     animation: rise 0.75s cubic-bezier(0.16, 0.84, 0.28, 1) both;
   }
 
@@ -110,6 +125,7 @@
     font-size: 12.5px;
     line-height: 1.6;
     color: var(--muted);
+    overflow-wrap: anywhere;
   }
 
   /* ---------- input ---------- */
@@ -120,7 +136,7 @@
     height: 60px;
     padding: 0 13px;
     border-radius: 15px;
-    background: var(--field);
+    background: rgba(255, 255, 255, 0.07);
     border: 1.5px solid var(--line);
     transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
     cursor: text;
@@ -150,6 +166,7 @@
 
   #pid {
     flex: 1;
+    width: 100%;
     min-width: 0;
     height: 100%;
     padding: 0 4px 0 2px;
@@ -287,7 +304,122 @@
     color: var(--ink);
   }
 
-  /* ---------- phone: artwork as the page background, card sits on top of it ---------- */
+  /* ---------- settings ---------- */
+  .gear {
+    position: fixed;
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+    z-index: 40;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(10, 15, 28, 0.5);
+    color: var(--ink);
+    cursor: pointer;
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.8);
+    transition: background 0.18s ease, transform 0.3s cubic-bezier(0.2, 0.8, 0.3, 1), border-color 0.18s ease;
+  }
+  .gear:hover { background: rgba(20, 30, 50, 0.7); border-color: rgba(255, 255, 255, 0.34); }
+  .gear[aria-expanded="true"] { transform: rotate(90deg); border-color: var(--sky); }
+  .gear:focus-visible { outline: 3px solid rgba(143, 214, 255, 0.55); outline-offset: 3px; }
+
+  .settings {
+    position: fixed;
+    z-index: 45;
+    top: max(66px, calc(env(safe-area-inset-top) + 60px));
+    right: max(14px, env(safe-area-inset-right));
+    width: min(310px, calc(100vw - 28px));
+    padding: 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(9, 14, 26, 0.86);
+    backdrop-filter: blur(26px) saturate(150%);
+    -webkit-backdrop-filter: blur(26px) saturate(150%);
+    box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.95);
+    color: var(--ink);
+    animation: pop 0.22s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+  .settings[hidden] { display: none; }
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .settings-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .settings-head h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: 0.04em; }
+  .x {
+    width: 26px; height: 26px; display: grid; place-items: center;
+    border: 0; border-radius: 8px; background: var(--chip); color: var(--muted);
+    font-size: 15px; line-height: 1; cursor: pointer;
+  }
+  .x:hover { color: var(--ink); }
+
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; }
+  .row + .row { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+  .row-label { font-size: 12px; color: var(--muted); flex: none; }
+
+  .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); }
+  .seg button {
+    border: 0; background: none; color: var(--muted);
+    font-family: inherit; font-size: 11.5px;
+    padding: 5px 10px; border-radius: 7px; cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .seg button:hover { color: var(--ink); }
+  .seg button.on { background: rgba(95, 182, 240, 0.28); color: #fff; }
+
+  .file-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 11px; border-radius: 9px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 11.5px; color: var(--ink); cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .file-btn:hover { border-color: var(--sky); background: rgba(95, 182, 240, 0.14); }
+  .mini {
+    border: 0; background: none; color: var(--muted); font-family: inherit;
+    font-size: 11.5px; padding: 6px 8px; border-radius: 8px; cursor: pointer;
+  }
+  .mini:hover { color: var(--ink); background: var(--chip); }
+
+  .alpha-wrap { display: inline-flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 118px; height: 3px; border-radius: 3px;
+    background: rgba(255, 255, 255, 0.22);
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--sky-2); border: 0; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px; border: 0; border-radius: 50%;
+    background: var(--sky-2); cursor: pointer;
+  }
+  #alphaOut { font-size: 11px; color: var(--muted); width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .reset {
+    width: 100%; margin-top: 14px; padding: 9px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--muted); font-family: inherit; font-size: 11.5px; cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .reset:hover { color: var(--ink); border-color: rgba(255, 255, 255, 0.26); }
+
+  .hint { margin: 10px 0 0; font-size: 10.5px; line-height: 1.6; color: rgba(226, 236, 255, 0.42); }
+
+  /* ---------- phone ---------- */
   @media (max-width: 780px) {
     body {
       align-items: end;
@@ -302,14 +434,19 @@
     .card {
       width: 100%;
       border-radius: 22px;
-      background: linear-gradient(to top, rgba(8, 12, 22, 0.34), rgba(8, 12, 22, 0.24));
-      border-color: rgba(255, 255, 255, 0.20);
       backdrop-filter: blur(30px) saturate(150%);
       -webkit-backdrop-filter: blur(30px) saturate(150%);
-      box-shadow: 0 26px 60px -30px rgba(0, 0, 0, 0.85), 0 1px 0 rgba(255, 255, 255, 0.14) inset;
     }
     .actions { justify-content: stretch; }
     .go { flex: 1; justify-content: center; }
+    .settings {
+      top: auto;
+      left: 12px;
+      right: 12px;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      width: auto;
+      border-radius: 20px;
+    }
   }
 
   @media (max-width: 380px) {
@@ -327,13 +464,61 @@
 </style>
 </head>
 <body>
-  <div class="bg" aria-hidden="true">
-    <picture>
-      <source media="(max-width: 780px)" srcset="cover-mobile.webp" />
-      <img src="cover-desktop.webp" alt="" fetchpriority="high" />
-    </picture>
-  </div>
+  <div class="bg" aria-hidden="true"><img id="bgImg" src="cover-desktop.webp" alt="" fetchpriority="high" /></div>
   <div class="scrim" aria-hidden="true"></div>
+
+  <button class="gear" id="settingsBtn" aria-label="外观设置" aria-expanded="false" aria-controls="settingsPanel">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z" />
+    </svg>
+  </button>
+
+  <div class="settings" id="settingsPanel" role="dialog" aria-label="外观设置" hidden>
+    <div class="settings-head">
+      <h2>外观设置</h2>
+      <button class="x" id="closeSettings" aria-label="关闭设置">×</button>
+    </div>
+
+    <div class="row">
+      <span class="row-label">背景图片</span>
+      <span style="display:inline-flex;align-items:center">
+        <label class="file-btn" for="bgFile">选择…</label>
+        <input type="file" id="bgFile" accept="image/*" hidden />
+        <button class="mini" id="bgReset" type="button">默认</button>
+      </span>
+    </div>
+
+    <div class="row">
+      <span class="row-label">卡片左右</span>
+      <div class="seg" id="segH" role="group" aria-label="卡片水平位置">
+        <button type="button" data-val="left">左</button>
+        <button type="button" data-val="center">中</button>
+        <button type="button" data-val="right">右</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <span class="row-label">卡片上下</span>
+      <div class="seg" id="segV" role="group" aria-label="卡片垂直位置">
+        <button type="button" data-val="top">上</button>
+        <button type="button" data-val="middle">中</button>
+        <button type="button" data-val="bottom">下</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <span class="row-label">不透明度</span>
+      <span class="alpha-wrap">
+        <input type="range" id="alpha" min="0.1" max="0.95" step="0.05" value="0.34" aria-label="卡片不透明度" />
+        <output id="alphaOut">34%</output>
+      </span>
+    </div>
+
+    <button class="reset" id="resetAll" type="button">恢复全部默认</button>
+    <p class="hint">设置只保存在本机浏览器，换设备需要重新设置。手机上「左右」不影响宽度。</p>
+  </div>
 
   <main class="card">
     <span class="badge"><i></i>Pixiv Artwork</span>
@@ -383,6 +568,7 @@
 (function () {
   "use strict";
 
+  /* ================= 作品跳转 ================= */
   var BASE = "https://www.pixiv.net/artworks/";
   var STORE = "pixiv-jump.history.v1";
   var STORE_NEWTAB = "pixiv-jump.newtab.v1";
@@ -403,22 +589,17 @@
       var raw = localStorage.getItem(STORE);
       var list = raw ? JSON.parse(raw) : [];
       return Array.isArray(list) ? list.filter(function (id) { return /^\d+$/.test(id); }) : [];
-    } catch (e) {
-      return [];
-    }
+    } catch (e) { return []; }
   }
-
   function writeHistory(list) {
-    try { localStorage.setItem(STORE, JSON.stringify(list)); } catch (e) { /* 隐私模式忽略 */ }
+    try { localStorage.setItem(STORE, JSON.stringify(list)); } catch (e) {}
   }
-
   function remember(id) {
     var list = readHistory().filter(function (x) { return x !== id; });
     list.unshift(id);
     writeHistory(list.slice(0, MAX_HISTORY));
     renderHistory();
   }
-
   function parseId(raw) {
     if (!raw) return "";
     var value = String(raw).trim();
@@ -430,7 +611,6 @@
     var byDigits = value.match(/\d{1,12}/);
     return byDigits ? byDigits[0] : "";
   }
-
   function showError(message) {
     errEl.textContent = message;
     errEl.classList.add("show");
@@ -438,12 +618,10 @@
     window.setTimeout(function () { field.classList.remove("shake"); }, 460);
     input.focus();
   }
-
   function clearError() {
     errEl.classList.remove("show");
     field.classList.remove("invalid");
   }
-
   function open(id) {
     var url = BASE + id;
     remember(id);
@@ -454,14 +632,10 @@
       window.location.href = url;
     }
   }
-
   function renderHistory() {
     var list = readHistory();
     histList.textContent = "";
-    if (!list.length) {
-      historyEl.hidden = true;
-      return;
-    }
+    if (!list.length) { historyEl.hidden = true; return; }
     historyEl.hidden = false;
     list.forEach(function (id) {
       var li = document.createElement("li");
@@ -483,14 +657,10 @@
     event.preventDefault();
     clearError();
     var id = parseId(input.value);
-    if (!id) {
-      showError("请输入作品 ID（纯数字，或直接粘贴作品链接）");
-      return;
-    }
+    if (!id) { showError("请输入作品 ID（纯数字，或直接粘贴作品链接）"); return; }
     input.value = id;
     open(id);
   });
-
   input.addEventListener("input", function () {
     var value = input.value;
     var id = parseId(value);
@@ -498,36 +668,190 @@
     clearBtn.hidden = !input.value;
     clearError();
   });
-
   input.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") {
-      input.value = "";
-      clearBtn.hidden = true;
-      clearError();
-    }
+    if (event.key === "Escape") { input.value = ""; clearBtn.hidden = true; clearError(); }
   });
-
   clearBtn.addEventListener("click", function () {
-    input.value = "";
-    clearBtn.hidden = true;
-    clearError();
-    input.focus();
+    input.value = ""; clearBtn.hidden = true; clearError(); input.focus();
   });
-
   clearHist.addEventListener("click", function () {
-    writeHistory([]);
-    renderHistory();
-    input.focus();
+    writeHistory([]); renderHistory(); input.focus();
   });
-
-  try {
-    newTab.checked = localStorage.getItem(STORE_NEWTAB) === "1";
-  } catch (e) { /* ignore */ }
+  try { newTab.checked = localStorage.getItem(STORE_NEWTAB) === "1"; } catch (e) {}
   newTab.addEventListener("change", function () {
-    try { localStorage.setItem(STORE_NEWTAB, newTab.checked ? "1" : "0"); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(STORE_NEWTAB, newTab.checked ? "1" : "0"); } catch (e) {}
+  });
+  renderHistory();
+
+  /* ================= 外观设置 ================= */
+  var PREF_KEY = "pixiv-jump.prefs.v1";
+  var DEFAULT_DESKTOP = "cover-desktop.webp";
+  var DEFAULT_MOBILE = "cover-mobile.webp";
+  var bgImg = document.getElementById("bgImg");
+  var mq = window.matchMedia("(max-width: 780px)");
+
+  var prefs = { h: null, v: null, alpha: null };
+  try {
+    var saved = JSON.parse(localStorage.getItem(PREF_KEY) || "null");
+    if (saved && typeof saved === "object") prefs = { h: saved.h || null, v: saved.v || null, alpha: typeof saved.alpha === "number" ? saved.alpha : null };
+  } catch (e) {}
+
+  var customBg = null;
+
+  function savePrefs() {
+    try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {}
+  }
+
+  /* --- tiny IndexedDB store for the custom image (localStorage is too small) --- */
+  function idb(mode, handler) {
+    return new Promise(function (resolve, reject) {
+      if (!("indexedDB" in window)) { reject(new Error("no idb")); return; }
+      var req = indexedDB.open("pixiv-jump", 1);
+      req.onupgradeneeded = function () { req.result.createObjectStore("kv"); };
+      req.onerror = function () { reject(req.error); };
+      req.onsuccess = function () {
+        var db = req.result;
+        try {
+          var tx = db.transaction("kv", mode);
+          var store = tx.objectStore("kv");
+          var r = handler(store);
+          tx.oncomplete = function () { db.close(); resolve(r && r.result); };
+          tx.onerror = function () { db.close(); reject(tx.error); };
+        } catch (e) { db.close(); reject(e); }
+      };
+    });
+  }
+  function bgSave(data) { return idb("readwrite", function (s) { return s.put(data, "bg"); }); }
+  function bgLoad() { return idb("readonly", function (s) { return s.get("bg"); }); }
+  function bgClear() { return idb("readwrite", function (s) { return s.delete("bg"); }); }
+
+  function applyBg() {
+    bgImg.src = customBg || (mq.matches ? DEFAULT_MOBILE : DEFAULT_DESKTOP);
+  }
+  if (mq.addEventListener) mq.addEventListener("change", applyBg);
+  else if (mq.addListener) mq.addListener(applyBg);
+
+  function applyPosition() {
+    if (prefs.h) document.body.setAttribute("data-h", prefs.h);
+    else document.body.removeAttribute("data-h");
+    if (prefs.v) document.body.setAttribute("data-v", prefs.v);
+    else document.body.removeAttribute("data-v");
+    markSeg("segH", prefs.h);
+    markSeg("segV", prefs.v);
+  }
+  function markSeg(id, val) {
+    var seg = document.getElementById(id);
+    Array.prototype.forEach.call(seg.querySelectorAll("button"), function (b) {
+      b.classList.toggle("on", b.getAttribute("data-val") === val);
+    });
+  }
+
+  var alphaInput = document.getElementById("alpha");
+  var alphaOut = document.getElementById("alphaOut");
+  function currentAlpha() {
+    if (prefs.alpha != null) return prefs.alpha;
+    return mq.matches ? 0.34 : 0.68;
+  }
+  function applyAlpha() {
+    var a = currentAlpha();
+    document.documentElement.style.setProperty("--card-a", String(a));
+    alphaInput.value = String(a);
+    alphaOut.textContent = Math.round(a * 100) + "%";
+  }
+
+  document.getElementById("segH").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-val]");
+    if (!b) return;
+    var val = b.getAttribute("data-val");
+    prefs.h = prefs.h === val ? null : val;
+    savePrefs(); applyPosition();
+  });
+  document.getElementById("segV").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-val]");
+    if (!b) return;
+    var val = b.getAttribute("data-val");
+    prefs.v = prefs.v === val ? null : val;
+    savePrefs(); applyPosition();
   });
 
-  renderHistory();
+  alphaInput.addEventListener("input", function () {
+    prefs.alpha = Number(alphaInput.value);
+    applyAlpha();
+    savePrefs();
+  });
+
+  /* --- custom background image --- */
+  function downscale(file, cb) {
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function () {
+      var max = 1800;
+      var scale = Math.min(1, max / Math.max(img.width, img.height));
+      var w = Math.max(1, Math.round(img.width * scale));
+      var h = Math.max(1, Math.round(img.height * scale));
+      var canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      try { cb(canvas.toDataURL("image/jpeg", 0.86)); } catch (e) { cb(null); }
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); cb(null); };
+    img.src = url;
+  }
+
+  document.getElementById("bgFile").addEventListener("change", function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    downscale(file, function (dataUrl) {
+      if (!dataUrl) return;
+      customBg = dataUrl;
+      applyBg();
+      bgSave(dataUrl).catch(function () { /* 存不下就只在本次有效 */ });
+    });
+    e.target.value = "";
+  });
+
+  document.getElementById("bgReset").addEventListener("click", function () {
+    customBg = null;
+    applyBg();
+    bgClear().catch(function () {});
+  });
+
+  document.getElementById("resetAll").addEventListener("click", function () {
+    prefs = { h: null, v: null, alpha: null };
+    savePrefs();
+    customBg = null;
+    bgClear().catch(function () {});
+    applyBg();
+    applyPosition();
+    applyAlpha();
+  });
+
+  /* --- panel open/close --- */
+  var gearBtn = document.getElementById("settingsBtn");
+  var panel = document.getElementById("settingsPanel");
+  function setOpen(open) {
+    panel.hidden = !open;
+    gearBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  gearBtn.addEventListener("click", function () { setOpen(panel.hidden); });
+  document.getElementById("closeSettings").addEventListener("click", function () { setOpen(false); gearBtn.focus(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !panel.hidden) { setOpen(false); gearBtn.focus(); }
+  });
+  document.addEventListener("pointerdown", function (e) {
+    if (panel.hidden) return;
+    if (panel.contains(e.target) || gearBtn.contains(e.target)) return;
+    setOpen(false);
+  });
+
+  /* --- boot --- */
+  applyPosition();
+  applyAlpha();
+  applyBg();
+  bgLoad().then(function (data) {
+    if (data) { customBg = data; applyBg(); }
+  }).catch(function () {});
 })();
 </script>
 </body>
