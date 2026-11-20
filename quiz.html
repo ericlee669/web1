@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>智能控制原理 · 复习题库</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --panel2:#f7f9fc; --line:#e3e8ef;
+  --txt:#1f2937; --dim:#6b7280; --accent:#2563eb; --accent2:#7c3aed;
+  --ok:#15803d; --okbg:rgba(21,128,61,.07);
+  --bad:#dc2626; --badbg:rgba(220,38,38,.06);
+  --warn:#b45309; --warnbg:rgba(180,83,9,.07);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15px; line-height:1.75; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1020px;margin:0 auto;padding:0 16px 120px}
+
+/* ---------- 顶部 ---------- */
+header{
+  position:sticky; top:0; z-index:50;
+  backdrop-filter:blur(14px);
+  background:rgba(255,255,255,.92);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 1px 3px rgba(15,23,42,.04);
+}
+.hd-in{max-width:1020px;margin:0 auto;padding:10px 16px}
+.hd-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{
+  width:32px;height:32px;border-radius:9px;flex:0 0 auto;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:grid;place-items:center;font-weight:700;font-size:15px;color:#fff;
+}
+h1{font-size:16px;margin:0;font-weight:650;letter-spacing:.3px;color:#111827}
+h1 small{display:block;font-size:11.5px;color:var(--dim);font-weight:400;letter-spacing:0}
+.spacer{flex:1}
+.stat{font-size:12.5px;color:var(--dim);white-space:nowrap}
+.stat b{color:var(--txt);font-variant-numeric:tabular-nums}
+
+.tabs{display:flex;gap:6px;margin-top:9px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:0 0 auto;border:1px solid var(--line);background:#fff;
+  color:var(--dim);border-radius:9px;padding:6px 13px;font-size:13px;
+  cursor:pointer;transition:.15s;white-space:nowrap;
+}
+.tab:hover{color:var(--txt);border-color:#c3ccda;background:#fbfcfe}
+.tab.on{background:linear-gradient(135deg,rgba(37,99,235,.10),rgba(124,58,237,.08));
+  color:#1d4ed8;border-color:#a9c1f0;font-weight:600}
+.tab .n{opacity:.65;font-size:11.5px;margin-left:3px}
+
+/* ---------- 章节筛选条 ---------- */
+.chbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;padding-bottom:2px;
+  border-top:1px dashed var(--line);padding-top:9px}
+.chbar::-webkit-scrollbar{display:none}
+.chbar .lblch{flex:0 0 auto;font-size:11.5px;color:var(--dim);align-self:center;margin-right:2px;letter-spacing:.5px}
+.chip{
+  flex:0 0 auto;border:1px solid var(--line);background:#fff;color:var(--dim);
+  border-radius:999px;padding:4px 12px;font-size:12.3px;cursor:pointer;transition:.15s;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:5px;font-family:inherit;
+}
+.chip:hover{color:var(--txt);border-color:#c3ccda;background:#fbfcfe}
+.chip.on{background:#eef4ff;color:#1d4ed8;border-color:#a9c1f0;font-weight:600}
+.chip .c{font-size:11px;opacity:.7;font-variant-numeric:tabular-nums}
+.chip .d{width:6px;height:6px;border-radius:50%;background:#dbe3ee;flex:0 0 auto}
+.chip .d.all{background:#15803d}
+.chip .d.some{background:#b45309}
+
+/* ---------- 章节信息条 ---------- */
+.chinfo{
+  margin:16px 0 2px;background:linear-gradient(135deg,#eef4ff,#f7f4ff);
+  border:1px solid #dbe4f5;border-radius:12px;padding:13px 16px;
+}
+.chinfo .t1{font-size:15px;font-weight:650;color:#0f172a;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chinfo .t1 .pg{font-size:11.5px;font-weight:600;color:#1d4ed8;background:#e3ecff;border-radius:6px;padding:1px 8px}
+.chinfo .t2{font-size:12.8px;color:#4b5563;margin-top:7px;line-height:1.9}
+.chinfo .t2 b{color:#1d4ed8}
+.chinfo .t3{font-size:12.5px;color:#6b7280;margin-top:4px}
+.chinfo .file{font-size:11.5px;color:#94a3b8;margin-top:6px;font-family:"Cascadia Code",Consolas,monospace}
+
+.toolbar{display:flex;gap:8px;align-items:center;margin:14px 0 6px;flex-wrap:wrap}
+.btn{
+  border:1px solid var(--line);background:#fff;color:var(--txt);
+  border-radius:9px;padding:7px 14px;font-size:13.5px;cursor:pointer;transition:.15s;
+  font-family:inherit;
+}
+.btn:hover{background:#f3f6fb;border-color:#c3ccda}
+.btn.pri{background:linear-gradient(135deg,#2563eb,#4f46e5);border-color:transparent;color:#fff;font-weight:600}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.ghost{background:#fff}
+.btn.sm{padding:4px 10px;font-size:12.5px;border-radius:7px}
+
+/* ---------- 进度条 ---------- */
+.bar{height:5px;border-radius:3px;background:#e8ecf2;overflow:hidden;margin:12px 0 4px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.4s}
+
+/* ---------- 题目卡片 ---------- */
+.q{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:16px 18px;margin:14px 0;transition:.2s;scroll-margin-top:130px;
+  box-shadow:0 1px 2px rgba(15,23,42,.04);
+}
+.q:hover{border-color:#cbd5e1;box-shadow:0 2px 8px rgba(15,23,42,.06)}
+.q.ok{border-color:#a7d3b6;background:linear-gradient(180deg,var(--okbg),transparent 60%),var(--panel)}
+.q.bad{border-color:#f0b4b4;background:linear-gradient(180deg,var(--badbg),transparent 60%),var(--panel)}
+.q.part{border-color:#e6c58b;background:linear-gradient(180deg,var(--warnbg),transparent 60%),var(--panel)}
+.qh{display:flex;align-items:center;gap:9px;margin-bottom:9px;flex-wrap:wrap}
+.no{
+  min-width:26px;height:26px;padding:0 7px;border-radius:8px;
+  background:#eef2f7;color:#4b5563;font-size:12.5px;font-weight:600;
+  display:inline-grid;place-items:center;flex:0 0 auto;
+}
+.no.e{background:linear-gradient(135deg,#2563eb,#6d28d9);color:#fff}
+.tag{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:1px 7px;background:#fbfcfe}
+.tag.pt{color:#a16207;border-color:#edd9a3;background:#fffbeb}
+.qh .spacer{flex:1}
+.flag{font-size:12.5px;font-weight:600}
+.flag.ok{color:var(--ok)} .flag.bad{color:var(--bad)} .flag.part{color:var(--warn)}
+
+.stem{font-size:15.3px;line-height:2.05;word-break:break-word}
+.stem pre, .ans pre{
+  font-family:"Cascadia Code",Consolas,"Courier New",monospace;
+  background:#f8fafc;border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px;overflow-x:auto;font-size:13.2px;line-height:1.62;margin:8px 0;
+  color:#1e40af;
+}
+.k{color:#b45309;font-weight:600}
+b{color:#0f172a}
+
+/* ---------- 填空输入 ---------- */
+input.blank{
+  font-family:inherit;font-size:14.5px;
+  background:#fff;border:1px solid #cbd5e1;border-bottom:2px solid var(--accent);
+  color:#1e3a8a;border-radius:7px;padding:2px 9px;margin:0 2px;
+  width:150px;outline:none;transition:.15s;
+}
+input.blank:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+input.blank.wide{width:320px}
+input.blank.ok{border-color:var(--ok);border-bottom-color:var(--ok);background:rgba(21,128,61,.05)}
+input.blank.bad{border-color:var(--bad);border-bottom-color:var(--bad);background:rgba(220,38,38,.05)}
+input.blank.part{border-color:var(--warn);border-bottom-color:var(--warn);background:rgba(180,83,9,.05)}
+
+textarea.ta{
+  width:100%;min-height:110px;resize:vertical;
+  background:#fff;border:1px solid #cbd5e1;border-radius:10px;
+  color:#1f2937;font-family:inherit;font-size:14.5px;line-height:1.8;
+  padding:11px 13px;outline:none;transition:.15s;
+}
+textarea.ta:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+
+/* ---------- 答案区 ---------- */
+.ansbox{margin-top:13px;border-top:1px dashed var(--line);padding-top:13px;display:none}
+.ansbox.show{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.lbl{
+  display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.5px;
+  padding:1px 9px;border-radius:6px;margin-bottom:7px;
+}
+.lbl.a{color:#15803d;background:#eefaf1;border:1px solid #bfe3c9}
+.lbl.n{color:#a16207;background:#fff8e6;border:1px solid #edd9a3}
+.ans{font-size:14.6px;line-height:1.95;background:#f8fafc;border:1px solid #e5eaf1;
+  border-radius:10px;padding:12px 15px;margin-bottom:11px}
+.ana{font-size:13.6px;line-height:1.9;color:#4b5563;background:rgba(124,58,237,.045);
+  border-left:3px solid var(--accent2);border-radius:0 10px 10px 0;padding:11px 15px}
+.ana pre{font-size:12.8px}
+
+/* ---------- 课件出处 ---------- */
+.lbl.s{color:#1d4ed8;background:#eef4ff;border:1px solid #c3d7fb}
+.src{font-size:13.2px;line-height:1.85;background:#f7f9fd;border:1px solid #e2e8f0;
+  border-radius:10px;padding:10px 14px;margin-top:2px}
+.src .row{display:flex;gap:8px;align-items:flex-start;padding:5px 0}
+.src .row + .row{border-top:1px dashed #e5eaf1}
+.src .ppt{
+  flex:0 0 auto;font-size:11.5px;font-weight:700;color:#1d4ed8;background:#e8f0ff;
+  border-radius:6px;padding:1px 8px;white-space:nowrap;margin-top:2px
+}
+.src .txt{flex:1 1 auto;color:#374151}
+.src .sec{color:#0f172a;font-weight:600}
+.src .kp{color:#7c3aed;font-weight:600}
+@media print{ .src{background:#fff} }
+.ans img, .qimg{
+  max-width:100%;border-radius:9px;background:#fff;padding:7px;margin:9px 0;display:block;
+  border:1px solid var(--line);
+}
+.ans table.tb{border-collapse:collapse;margin:8px 0;font-size:14px}
+.ans table.tb th,.ans table.tb td{border:1px solid #d5dde7;padding:5px 13px;text-align:center}
+
+.self{display:flex;gap:7px;align-items:center;margin-top:11px;flex-wrap:wrap}
+.self span{font-size:12.5px;color:var(--dim)}
+.self button{
+  border:1px solid var(--line);background:#fff;color:var(--dim);
+  border-radius:7px;padding:3px 11px;font-size:12.5px;cursor:pointer;font-family:inherit;
+}
+.self button:hover{color:var(--txt);border-color:#c3ccda;background:#f7f9fc}
+.self button.on.ok{background:var(--okbg);color:var(--ok);border-color:#a7d3b6;font-weight:600}
+.self button.on.part{background:var(--warnbg);color:var(--warn);border-color:#e6c58b;font-weight:600}
+.self button.on.bad{background:var(--badbg);color:var(--bad);border-color:#f0b4b4;font-weight:600}
+
+.qfoot{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+
+/* ---------- 空态 ---------- */
+.empty{text-align:center;color:var(--dim);padding:70px 20px;font-size:14px}
+
+/* ---------- 悬浮操作 ---------- */
+.fab{
+  position:fixed;right:20px;bottom:20px;z-index:60;display:flex;flex-direction:column;gap:9px;
+}
+.fab button{
+  width:46px;height:46px;border-radius:50%;border:1px solid var(--line);
+  background:rgba(255,255,255,.95);color:var(--txt);font-size:17px;cursor:pointer;
+  backdrop-filter:blur(10px);transition:.15s;display:grid;place-items:center;
+  box-shadow:0 2px 10px rgba(15,23,42,.10);
+}
+.fab button:hover{background:#f3f6fb;transform:translateY(-2px)}
+
+/* ---------- 弹层 ---------- */
+.modal{
+  position:fixed;inset:0;background:rgba(15,23,42,.35);backdrop-filter:blur(3px);
+  display:none;place-items:center;z-index:100;padding:20px;
+}
+.modal.show{display:grid}
+.modal .box{
+  background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:24px 26px;max-width:520px;width:100%;box-shadow:0 24px 60px rgba(15,23,42,.20);
+}
+.modal h3{margin:0 0 14px;font-size:17px;color:#111827}
+.modal table{width:100%;border-collapse:collapse;font-size:14px}
+.modal td{padding:6px 0;border-bottom:1px solid #eef1f6}
+.modal td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.modal .big{font-size:30px;font-weight:700;color:var(--accent)}
+
+@media(max-width:640px){
+  body{font-size:14.5px}
+  .q{padding:13px 12px;border-radius:12px}
+  input.blank{width:110px}
+  input.blank.wide{width:200px}
+  h1{font-size:14.5px}
+  .wrap{padding:0 10px 110px}
+}
+@media print{
+  header,.fab,.toolbar,.self,.qfoot,.tabs,.chbar{display:none!important}
+  .chinfo{background:#fff;border:1px solid #ccc}
+  .chinfo .file{display:none}
+  body{background:#fff;color:#000}
+  .q{break-inside:avoid;border:1px solid #ccc;background:#fff;box-shadow:none}
+  .stem,.ans,.ana{color:#000;background:#fff}
+  pre{background:#f7f7f7;color:#000;border-color:#ddd}
+  .ansbox{display:block!important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-in">
+    <div class="hd-top">
+      <div class="logo">智</div>
+      <h1>智能控制原理 · 复习题库<small>填空 25 空 · 简答 4 题 · 计算 3 题 · 论述 1 题（四选一）</small></h1>
+      <div class="spacer"></div>
+      <div class="stat" id="stat">—</div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="chbar" id="chbar"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <button class="btn pri" id="btnCheckAll">✓ 全部批改</button>
+    <button class="btn" id="btnShowAll">👁 显示全部答案</button>
+    <button class="btn ghost" id="btnRandom">⇄ 随机顺序</button>
+    <button class="btn ghost" id="btnExam">⏱ 模拟组卷</button>
+    <button class="btn ghost" id="btnReset">↺ 清空记录</button>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+  <div id="list"></div>
+</div>
+
+<div class="fab">
+  <button id="fabTop" title="回到顶部">▲</button>
+  <button id="fabResult" title="成绩单">Σ</button>
+</div>
+
+<div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
+
+<script>
+const DATA = {"fill": [{"no": "1", "stem": "智能控制是一门控制理论课程，研究如何运用%%的方法来构造控制系统和设计控制器；与%%和%%一起构成了自动控制课程体系的理论基础。", "blanks": [["人工智能", "AI"], ["自动控制原理", "经典控制理论", "自动控制"], ["现代控制理论", "现代控制原理"]], "ana": "智能控制<span class='k'>用人工智能的方法</span>构造控制系统、设计控制器；它与自动控制原理（经典控制）、现代控制理论共同构成自动控制课程体系的三大理论支柱。", "id": "fill1", "section": "fill", "src": [{"c": "第1章 绪论", "p": "P6", "s": "1.1 学习智能控制的意义", "k": "《智能控制》在自动化课程体系中的位置：智能控制 / 自动控制原理 / 现代控制理论"}], "ch": ["ch1"], "nblank": 3}, {"no": "2", "stem": "智能控制系统的主要类型有：%%等等。", "blanks": [["分级递阶控制系统、专家控制系统、学习控制系统、模糊控制系统、神经控制系统、遗传算法控制系统和混合控制系统"]], "ana": "教材归纳的七类：分级递阶、专家控制、学习控制、模糊控制、神经控制、遗传算法控制、混合（集成）控制。考试写全给满分，写对5个以上一般可得分。", "id": "fill2", "section": "fill", "src": [{"c": "第1章 绪论", "p": "P47", "s": "1.4 智能控制的主要形式", "k": "主图五类：分级递阶、模糊、神经网络、仿人智能、专家 + 综合集成"}, {"c": "第1章 绪论", "p": "P58–P59/P64/P69", "s": "1.2 智能控制系统的主要类型", "k": "逐类展开：模糊控制（P58–P59）、专家控制（P64–P66）、学习控制（P69–P73）"}], "ch": ["ch1"], "nblank": 1}, {"no": "3", "stem": "模糊集合的表示法有%%。", "blanks": [["扎德表示法、序偶表示法和隶属函数描述法"]], "ana": "扎德(Zadeh)表示法：Σμ(x)/x；序偶表示法：{(x, μ(x))}；隶属函数描述法：直接给出 μ(x) 的解析式。", "id": "fill3", "section": "fill", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P8", "s": "2.3 模糊集合", "k": "(2) 模糊集合的表示法：Zadeh 法 / 序偶法 / 隶属函数描述法"}], "ch": ["ch2"], "nblank": 1}, {"no": "4", "stem": "遗传算法是以达尔文的自然选择学说为基础发展起来的。自然选择学说包括以下三个方面：%%。", "blanks": [["遗传、变异、适者生存"]], "ana": "遗传（子代继承父代特征）、变异（产生新个体）、适者生存（适应度高的个体更易繁殖）。", "id": "fill4", "section": "fill", "src": [{"c": "第8章 遗传算法及应用", "p": "P3–P4", "s": "8.1 遗传算法的原理", "k": "达尔文自然选择学说：遗传、变异、适者生存"}], "ch": ["ch8"], "nblank": 1}, {"no": "5", "stem": "神经网络在智能控制中的应用主要有%%。", "blanks": [["神经网络辨识技术和神经网络控制技术"]], "ana": "两大类：用作<b>辨识器</b>（建立对象模型）与用作<b>控制器</b>（直接/间接控制）。", "id": "fill5", "section": "fill", "src": [{"c": "第5章 神经网络在控制中的应用", "p": "P2", "s": "第5章 引论", "k": "神经网络在控制中的两大应用：辨识技术 + 控制技术"}], "ch": ["ch5"], "nblank": 1}, {"no": "6", "stem": "在一个神经网络中，常常根据处理单元的不同处理功能，将处理单元分成%%三类。", "blanks": [["输入单元、输出单元和隐层单元"]], "ana": "按功能分：输入单元、输出单元、隐层（隐含）单元；按连接方式则分为前向、反馈、自组织网络。", "id": "fill6", "section": "fill", "src": [{"c": "第4章 神经网络基本理论", "p": "P20", "s": "4.4 神经网络的构成和分类", "k": "按功能分处理单元：输入单元、输出单元、隐层（隐含）单元"}], "ch": ["ch4"], "nblank": 1}, {"no": "7", "stem": "分级递阶控制系统：主要有三个控制级组成，按智能控制的高低分为%%，并且这三级遵循“%%”原则。", "blanks": [["组织级、协调级、执行级"], ["伴随智能递降，精度递增", "伴随智能递降精度递增", "智能递降精度递增"]], "ana": "越往上层智能程度越高、精度越低；越往下层智能程度越低、精度越高，即“伴随智能递降，精度递增”。", "id": "fill7", "section": "fill", "src": [{"c": "第1章 绪论", "p": "P48–P50", "s": "1.4.1 递阶智能控制", "k": "组织级/协调级/执行级；IPDI 原则——伴随智能递降、精度递增"}], "ch": ["ch1"], "nblank": 2}, {"no": "8", "stem": "神经网络自适应控制包括%%。", "blanks": [["神经网络模型参考直接自适应控制和神经网络模型参考间接自适应控制"]], "ana": "按是否经过对象模型分为<b>直接</b>（NNC 直接对被控对象）与<b>间接</b>（先辨识模型再算控制）自适应控制。", "id": "fill8", "section": "fill", "src": [{"c": "第5章 神经网络在控制中的应用", "p": "P16–P17", "s": "5.2.4 神经网络自适应控制", "k": "模型参考直接自适应 / 模型参考间接自适应"}], "ch": ["ch5"], "nblank": 1}, {"no": "9", "stem": "模糊控制器的基本结构一般由%%四个部分组成。", "blanks": [["模糊化接口、规则库、模糊推理、清晰化接口"]], "ana": "四部分：模糊化接口 → 规则库 → 模糊推理 → 清晰化（去模糊化）接口。", "id": "fill9", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P6", "s": "3.2 模糊控制器的结构和设计", "k": "四大部件：模糊化接口、规则库、模糊推理、清晰化接口"}], "ch": ["ch3"], "nblank": 1}, {"no": "10", "stem": "隶属函数的基本图形分为%%三大类。", "blanks": [["Z型函数、S型函数和P型函数"]], "ana": "Z 型（递减形，如“小”）、S 型（递增形，如“大”）、P 型（中间对称形，如“中”）。", "id": "fill10", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P14–P16", "s": "3.2.2 隶属函数的类型", "k": "正态/高斯型、三角型、梯型；按形状分 Z 型（偏小型下降）、S 型（偏大型上升）、Π 型（中间对称）"}], "ch": ["ch3"], "nblank": 1}, {"no": "11", "stem": "一个理想的智能控制系统应具备的性能是%%等。（只要答出任五个即可）", "blanks": [["学习能力、容错能力、适应性、鲁棒性、组织功能、实时性、人机协作"]], "ana": "七个性能：学习能力、容错能力、适应性、鲁棒性、组织功能、实时性、人机协作——任答五个。", "id": "fill11", "section": "fill", "src": [{"c": "第1章 绪论", "p": "P46", "s": "1.3.2 智能控制的特点", "k": "理想智能控制系统应具备：学习、容错、适应、鲁棒、组织、实时、人机协作"}], "ch": ["ch1"], "nblank": 1}, {"no": "12", "stem": "定义一个模糊语言变量，需要定义%%。", "blanks": [["语言变量的名称、论域、语言值以及每个模糊集合的隶属函数"]], "ana": "模糊语言变量 = 名称 + 论域 + 语言值 + 各语言值对应的隶属函数。", "id": "fill12", "section": "fill", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P32", "s": "2.6 语言规则中蕴涵的模糊关系", "k": "语言变量四要素：变量名称、论域、语言值、各模糊集合的隶属函数"}], "ch": ["ch2"], "nblank": 1}, {"no": "13", "stem": "模糊推理的方法通常有%%两种。", "blanks": [["Zadeh法和Mamdani推理方法", "Zadeh法和Mamdani法"]], "ana": "Zadeh 法（合成推理，用模糊关系合成）与 Mamdani 法（极小-极大合成，工程上最常用）。", "id": "fill13", "section": "fill", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P45–P48", "s": "2.7 模糊推理", "k": "Zadeh 推理法与 Mamdani 推理法（削顶法）"}], "ch": ["ch2"], "nblank": 1}, {"no": "14", "stem": "为了能方便地产生模糊查询表，在模糊控制器的设计中，通常引入%%因子和%%因子，通过取整把语言变量从连续域转到有限整数离散论域。", "blanks": [["量化"], ["比例"]], "ana": "输入侧用<b>量化因子</b> Ke、Kec 把精确量映射到离散论域；输出侧用<b>比例因子</b> Ku 把离散控制量还原为实际控制量。", "id": "fill14", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P9–P10", "s": "3.2.1 模糊化接口", "k": "量化因子 Ke、Kec 与比例因子 Ku；连续域→有限整数离散域"}], "ch": ["ch3"], "nblank": 2}, {"no": "15", "stem": "模糊控制器一般采用%%两种方法实现去模糊化。", "blanks": [["最大隶属度方法和加权平均法"]], "ana": "去模糊化（清晰化）常用：最大隶属度法（简单、粗糙）、加权平均法（即重心法，精度高）。", "id": "fill15", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P28–P31", "s": "3.2.4 清晰化（去模糊化）", "k": "最大隶属度法、加权平均法（重心法）"}], "ch": ["ch3"], "nblank": 1}, {"no": "16", "stem": "遗传算子一般包含%%三大类。", "blanks": [["选择算子、交叉算子和变异算子"]], "ana": "选择（复制优良个体）、交叉（交换基因产生新个体）、变异（小概率随机改变基因，保持多样性）。", "id": "fill16", "section": "fill", "src": [{"c": "第8章 遗传算法及应用", "p": "P13/P20/P23/P25", "s": "8.1 基本遗传算法的组成", "k": "三大遗传算子：选择、交叉、变异"}], "ch": ["ch8"], "nblank": 1}, {"no": "17", "stem": "神经网络从拓扑结构上，主要分为%%两类。", "blanks": [["层状和网状结构", "层状结构和网状结构"]], "ana": "层状（分层前馈/反馈）结构与网状（互连）结构。", "id": "fill17", "section": "fill", "src": [{"c": "第4章 神经网络基本理论", "p": "P20–P22", "s": "4.4 神经网络的构成和分类", "k": "拓扑结构：层状（前向）结构与网状（反馈）结构"}], "ch": ["ch4"], "nblank": 1}, {"no": "18", "stem": "智能控制中，美籍华人傅京孙提出的二元论是指%%。", "blanks": [["人工智能和自动控制"]], "ana": "傅京孙（K.S. Fu）二元论 = 人工智能 + 自动控制。", "id": "fill18", "section": "fill", "src": [{"c": "第1章 绪论", "p": "P19–P20", "s": "1.2.3 二元交集结构理论", "k": "傅京孙（K.S.Fu）：IC = AC ∩ AI，即自动控制 ∩ 人工智能"}], "ch": ["ch1"], "nblank": 1}, {"no": "19", "stem": "智能控制中，萨里迪斯（Saridis）于1977年提出的三元论指的是%%。", "blanks": [["运筹学、人工智能和自动控制"]], "ana": "Saridis 三元论 = 运筹学(OR) + 人工智能(AI) + 自动控制(AC)。后加信息论成“四元论”。", "id": "fill19", "section": "fill", "src": [{"c": "第1章 绪论", "p": "P22–P23", "s": "1.3.2 三元交集结构理论", "k": "萨里迪斯 1977：IC = AC ∩ AI ∩ OR（运筹学）"}], "ch": ["ch1"], "nblank": 1}, {"no": "20", "stem": "普通集合可用%%函数表示，模糊集合可用%%函数表示。", "blanks": [["特征"], ["隶属"]], "ana": "普通集合用特征函数 χ(x)∈{0,1}；模糊集合用隶属函数 μ(x)∈[0,1]，取值范围由二值扩展到闭区间。", "id": "fill20", "section": "fill", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P7/P10", "s": "2.3 模糊集合", "k": "普通集合用特征函数表示；模糊集合用隶属函数表示"}], "ch": ["ch2"], "nblank": 2}, {"no": "21", "stem": "模糊控制是以%%为基础的一种智能控制方法。", "blanks": [["模糊集理论、模糊语言变量和模糊逻辑推理", "模糊集理论、模糊语言变量、模糊逻辑推理"]], "ana": "三大基础：模糊集理论（数学工具）、模糊语言变量（知识表达）、模糊逻辑推理（推理机制）。", "id": "fill21", "section": "fill", "src": [{"c": "第1章 绪论", "p": "P57", "s": "1.4.2 以模糊系统理论为基础的模糊控制", "k": "以模糊集理论、模糊语言变量、模糊逻辑推理为基础"}], "ch": ["ch1"], "nblank": 1}, {"no": "22", "stem": "模糊控制的数学基础为%%。", "blanks": [["模糊集合", "模糊集合理论", "模糊集理论"]], "ana": "模糊集合（模糊集理论）是模糊控制的数学基础。", "id": "fill22", "section": "fill", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P2", "s": "2.1 概述", "k": "模糊数学（模糊集理论）是模糊控制的数学基础；Zadeh 1965 提出"}], "ch": ["ch2"], "nblank": 1}, {"no": "23", "stem": "模糊控制中，常用的语言变量值用 PM、PS、NM、NO 等表示，其中 PM 代表%%，NO 代表%%。", "blanks": [["正中", "正中等", "PM(Positive Medium)"], ["负零", "NO(Negative Zero)"]], "ana": "P=Positive 正，N=Negative 负，B=Big 大，M=Medium 中，S=Small 小，O=Zero 零。故 PM=正中，NO=负零。", "id": "fill23", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P11/P40", "s": "3.2.1 语言变量与语言值", "k": "七档 NB/NM/NS/ZO/PS/PM/PB；PM=正中（Positive Medium）"}], "ch": ["ch3"], "nblank": 2}, {"no": "24", "stem": "在模糊控制中，模糊推理的结果是%%量。", "blanks": [["模糊", "模糊量"]], "ana": "模糊推理输入模糊量、输出仍是<b>模糊量</b>；再经清晰化才得到精确量。", "id": "fill24", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P28", "s": "3.2.3 模糊推理", "k": "模糊推理的输出仍是模糊量（模糊集合），需再经清晰化"}], "ch": ["ch3"], "nblank": 1}, {"no": "25", "stem": "在模糊控制中，解模糊的结果是%%量。", "blanks": [["确定", "精确", "确定量", "精确量", "确定（精确）量"]], "ana": "清晰化（解模糊）把模糊量转换成执行机构可接受的<b>精确（确定）量</b>。", "id": "fill25", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P28–P31", "s": "3.2.4 清晰化（解模糊）", "k": "解模糊输出的是精确量（确定量）"}], "ch": ["ch3"], "nblank": 1}, {"no": "26", "stem": "在模糊控制中，实时信号需要%%才能作为模糊规则的输入，从而完成模糊推理。", "blanks": [["模糊化", "先模糊化"]], "ana": "精确的实时信号必须经模糊化接口转换为模糊语言值，才能与规则库匹配。", "id": "fill26", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P7", "s": "3.2.1 模糊化接口", "k": "实时精确信号必须先模糊化，才能作为规则的输入"}], "ch": ["ch3"], "nblank": 1}, {"no": "27", "stem": "神经网络一般可以通过%%和%%加以描述。", "blanks": [["一组状态方程"], ["一组学习方程"]], "ana": "状态方程描述网络动态（神经元输出的计算），学习方程描述权值调整规律。", "id": "fill27", "section": "fill", "src": [{"c": "第4章 神经网络基本理论", "p": "P26", "s": "4.4 多层前向 BP 神经网络", "k": "网络用一组状态方程 + 一组学习方程描述"}], "ch": ["ch4"], "nblank": 2}, {"no": "28", "stem": "遗传算法的主要用途是%%。", "blanks": [["寻优", "优化计算", "寻优（优化计算）", "优化"]], "ana": "遗传算法是模拟生物进化的全局随机搜索算法，主要用于复杂函数的寻优（优化计算）。", "id": "fill28", "section": "fill", "src": [{"c": "第8章 遗传算法及应用", "p": "P11", "s": "8.1.1 遗传算法的基本原理", "k": "GA 是并行随机搜索最优化方法，主要用途是寻优（优化计算）"}], "ch": ["ch8"], "nblank": 1}, {"no": "29", "stem": "遗传算法中，适配度大的个体有%%被复制到下一代。", "blanks": [["更多机会", "更大的机会", "更多机会被复制", "更大的概率"]], "ana": "按适应度比例选择（轮盘赌），适应度越大被复制的概率越大，体现“适者生存”。", "id": "fill29", "section": "fill", "src": [{"c": "第8章 遗传算法及应用", "p": "P20", "s": "8.1 选择算子", "k": "适应度高的个体被遗传到下一代的概率大"}], "ch": ["ch8"], "nblank": 1}, {"no": "30", "stem": "神经网络控制是将%%和%%相结合而发展起来的智能控制方法。", "blanks": [["神经网络"], ["控制理论"]], "ana": "神经网络 + 控制理论 → 神经网络控制。", "id": "fill30", "section": "fill", "src": [{"c": "第1章 绪论", "p": "P62", "s": "1.4.3 基于脑模型的神经网络控制", "k": "神经控制 = 神经网络 + 控制理论相结合"}], "ch": ["ch1"], "nblank": 2}, {"no": "31", "stem": "目前神经网络的学习算法有多种，按有无导师分类，可分为%%、%%和%%。", "blanks": [["有导师学习", "有监督学习"], ["无导师学习", "无监督学习"], ["再励学习", "强化学习"]], "ana": "有导师（有监督）学习、无导师（无监督）学习、再励（强化）学习三类。", "id": "fill31", "section": "fill", "src": [{"c": "第4章 神经网络基本理论", "p": "P23–P24", "s": "4.4 神经网络的构成和分类", "k": "按有无导师：有导师学习、无导师学习、再励（强化）学习"}], "ch": ["ch4"], "nblank": 3}, {"no": "32", "stem": "神经元由4部分构成，它们分别为%%、%%、%%和突触。", "blanks": [["细胞体"], ["树突"], ["轴突"]], "ana": "生物神经元 = 细胞体 + 树突（接收） + 轴突（传导） + 突触（连接），人工神经元是其简化模型。", "id": "fill32", "section": "fill", "src": [{"c": "第4章 神经网络基本理论", "p": "P4", "s": "4.1 人工神经元模型（生物神经元）", "k": "生物神经元四部分：细胞体、树突、轴突、突触"}], "ch": ["ch4"], "nblank": 3}, {"no": "33", "stem": "根据神经网络的连接方式，神经网络的3种形式为：%%、%%和%%。", "blanks": [["前向网络"], ["反馈网络"], ["自组织网络"]], "ana": "按连接方式：前向网络、反馈网络、自组织网络（注意与“层状/网状”的拓扑结构分类相区别）。", "id": "fill33", "section": "fill", "src": [{"c": "第4章 神经网络基本理论", "p": "P21–P22", "s": "4.4 神经网络的构成和分类", "k": "前向网络（层状、无反馈）、反馈网络（网状、有自环）、混合型网络"}, {"c": "第4章 神经网络基本理论", "p": "P40", "s": "4.5 大脑自组织神经网络", "k": "自组织网络：竞争学习、邻域更新"}], "ch": ["ch4"], "nblank": 3}, {"no": "34", "stem": "近年来，进化论、%%、%%和%%等各门学科的发展给智能控制注入了巨大的活力，并由此产生了各种智能控制方法。", "blanks": [["神经网络"], ["模糊数学"], ["专家系统"]], "ana": "进化论→遗传算法；神经网络→神经控制；模糊数学→模糊控制；专家系统→专家控制。", "id": "fill34", "section": "fill", "src": [{"c": "第1章 绪论", "p": "P47", "s": "1.4 智能控制的主要形式", "k": "神经网络、模糊数学、专家系统等学科分支的推动"}, {"c": "第8章 遗传算法及应用", "p": "P3", "s": "8.1 遗传算法的原理", "k": "进化论（自然选择学说）→ 遗传算法"}], "ch": ["ch1", "ch8"], "nblank": 3}, {"no": "35", "stem": "智能控制方法比传统的控制方法更能适应对象的%%、%%和%%。", "blanks": [["时变性"], ["非线性"], ["不确定性"]], "ana": "传统控制需要精确数学模型；智能控制擅长处理时变、非线性、不确定（不精确）对象。", "id": "fill35", "section": "fill", "src": [{"c": "第1章 绪论", "p": "P15/P46", "s": "1.2.2 传统控制理论的局限性 / 1.3.2 智能控制的特点", "k": "对象特性：时变性、非线性、不确定性"}], "ch": ["ch1"], "nblank": 3}, {"no": "36", "stem": "智能控制中的四元论指的是：%%、%%、%%和%%。", "blanks": [["自动控制"], ["人工智能"], ["信息论"], ["运筹学"]], "ana": "四元论 = 自动控制 + 人工智能 + 信息论 + 运筹学（萨里迪斯三元论再加信息论）。", "id": "fill36", "section": "fill", "src": [{"c": "第1章 绪论", "p": "P24–P25", "s": "1.3.3 四元交集结构理论", "k": "蔡自兴：IC = AC ∩ AI ∩ OR ∩ IT（自动控制、人工智能、运筹学、信息论）"}], "ch": ["ch1"], "nblank": 4}, {"no": "37", "stem": "在模糊控制器的设计中，通过引入%%因子和%%因子来实现语言变量从连续域到有限整数离散域的转换。", "blanks": [["量化"], ["比例"]], "ana": "量化因子把输入精确量压缩到离散论域；比例因子把推理结果放大到实际控制量范围。", "id": "fill37", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P9", "s": "3.2.1 模糊化接口", "k": "量化因子 + 比例因子实现连续域到有限整数离散域的转换"}], "ch": ["ch3"], "nblank": 2}, {"no": "38", "stem": "一般专家系统由%%、%%、%%、%%及%%五个部分组成。", "blanks": [["知识库"], ["数据库"], ["推理机"], ["解释器"], ["知识获取器", "知识获取"]], "ana": "五部分：知识库、数据库、推理机、解释器、知识获取器（人机界面）。", "id": "fill38", "section": "fill", "src": [{"c": "第7章 专家系统技术", "p": "P4", "s": "7.1.1 概述", "k": "五大组成：知识库、综合数据库、推理机、解释器、知识获取器"}], "ch": ["ch7"], "nblank": 5}, {"no": "39", "stem": "专家系统的知识表示中，产生式方法是最常用的一种方法。通常，产生式系统包含下述3个基本组成部分：%%、%%与%%。", "blanks": [["规则库", "规则库（知识库）"], ["数据库", "综合数据库"], ["控制器", "推理机", "控制器（推理机）"]], "ana": "产生式系统 = 规则库（IF-THEN 规则集合）+ 数据库（事实/工作存储器）+ 控制器（推理机，负责匹配与执行）。", "id": "fill39", "section": "fill", "src": [{"c": "第7章 专家系统技术", "p": "P8–P11", "s": "7.2 专家系统的知识表示方法（产生式）", "k": "三部分：规则库、数据库、控制器（推理机）"}], "ch": ["ch7"], "nblank": 3}, {"no": "40", "stem": "专家控制系统可分为%%、%%两类。", "blanks": [["直接专家控制系统"], ["间接专家控制系统"]], "ana": "直接专家控制：专家系统直接给出控制量；间接专家控制：专家系统只整定/监督下层控制器参数。", "id": "fill40", "section": "fill", "src": [{"c": "第7章 专家系统技术", "p": "P39/P44", "s": "7.4 专家控制", "k": "直接专家控制（ES 直接给出控制信号）/ 间接专家控制（算法与逻辑分离）"}], "ch": ["ch7"], "nblank": 2}, {"no": "41", "stem": "在专家系统的推理机制中，知识推理方法可分为%%推理、%%推理和%%推理三类。", "blanks": [["正向"], ["反向"], ["正反向混合"]], "ana": "正向（数据驱动，从事实推结论）、反向（目标驱动，从假设回推证据）、正反向混合推理。", "id": "fill41", "section": "fill", "src": [{"c": "第7章 专家系统技术", "p": "P28–P29", "s": "7.3 专家系统的推理机制", "k": "正向推理（数据驱动）、反向推理（目标驱动）、正反向混合推理"}], "ch": ["ch7"], "nblank": 3}, {"no": "42", "stem": "自校正模糊控制器通常分为两种：%%自校正模糊控制器和%%自校正模糊控制器两类。", "blanks": [["参数"], ["规则"]], "ana": "按被校正的对象分：参数自校正（调比例因子、隶属函数参数）与规则自校正（在线修改规则表）。", "id": "fill42", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P55–P56/P65", "s": "3.3.3 自校正模糊控制", "k": "参数自校正模糊控制器 / 规则自校正模糊控制器"}], "ch": ["ch3"], "nblank": 2}, {"no": "43", "stem": "知道了语言控制规则中蕴涵的模糊关系后，根据模糊关系和输入情况，来确定输出情况，叫做%%。", "blanks": [["模糊推理"]], "ana": "由模糊关系 R 与输入模糊集 A 合成得到输出模糊集 B，即 B = A∘R，这一过程叫模糊推理。", "id": "fill43", "section": "fill", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P44", "s": "2.7 模糊推理", "k": "由模糊关系与输入推断输出的过程即模糊推理（模糊变换）"}], "ch": ["ch2"], "nblank": 1}, {"no": "44", "stem": "在模糊控制器的设计中，通过引入量化因子和比例因子，来实现语言变量的%%到%%的转换。", "blanks": [["连续域"], ["有限整数离散域", "离散论域", "有限整数离散"]], "ana": "连续论域 →（量化因子）→ 有限整数离散论域 →（比例因子）→ 实际控制量。", "id": "fill44", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P9–P10", "s": "3.2.1 模糊化接口", "k": "语言变量从连续域到有限整数离散域的转换"}], "ch": ["ch3"], "nblank": 2}, {"no": "45", "stem": "表示隶属函数的模糊集合必须是%%。", "blanks": [["凸模糊集合", "凸模糊集", "凸的"]], "ana": "隶属函数曲线必须是单峰（凸）的，否则同一语言值含义不唯一，控制规则会自相矛盾。", "id": "fill45", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P12", "s": "3.2.2 隶属函数确定的原则", "k": "表示隶属函数的模糊集合必须是凸模糊集合"}], "ch": ["ch3"], "nblank": 1}, {"no": "46", "stem": "隶属函数形状较尖时，分辨率较%%，输入引起的输出变化比较%%，控制灵敏度较%%。", "blanks": [["高"], ["剧烈"], ["高"]], "ana": "形状尖 → 分辨率高 → 输出变化剧烈 → 灵敏度高但易振荡；形状缓 → 分辨率低 → 平稳但精度差。", "id": "fill46", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P17–P18", "s": "3.2.2 隶属函数形状对控制性能的影响", "k": "形状尖→分辨率高、输出变化剧烈、灵敏度高"}], "ch": ["ch3"], "nblank": 3}, {"no": "47", "stem": "隶属函数形状较缓时，分辨率较%%，输入引起的输出变化不那么剧烈，具有较好的系统%%。", "blanks": [["低"], ["稳定性"]], "ana": "形状平缓 → 分辨率低、变化平缓、稳定性好；实际设计常“误差大区用缓、小区用尖”折中。", "id": "fill47", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P17–P18", "s": "3.2.2 隶属函数形状对控制性能的影响", "k": "形状缓→分辨率低、变化平缓、系统稳定性好"}], "ch": ["ch3"], "nblank": 2}, {"no": "48", "stem": "由模糊控制器和PI控制器并联组成%%控制器。控制开关在系统误差较大时接通%%控制器，来克服不确定性因素的影响；在系统误差较小时接通%%控制器来消除稳态误差。", "blanks": [["双模", "双模模糊-PI", "双模(模糊-PI)"], ["模糊"], ["PI"]], "ana": "双模模糊-PI 控制：大误差段用模糊控制保证快速性与鲁棒性；小误差段切到 PI 消除稳态误差。", "id": "fill48", "section": "fill", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P52–P54", "s": "3.3.2 模糊控制与 PID 控制的结合", "k": "双模（模糊-PI 并联）控制；误差大接通模糊、误差小接通 PI"}], "ch": ["ch3"], "nblank": 3}, {"no": "49", "stem": "图式定理：在选择、交换、变异的作用下，阶次%%、定义长度%%、适应度%%的图式将按指数增长的规律，一代一代地增长。", "blanks": [["低"], ["短"], ["高"]], "ana": "图式定理（Schema Theorem）：低阶、短定义长度、高适应度的图式在进化中按指数规律增长。", "id": "fill49", "section": "fill", "src": [{"c": "第8章 遗传算法及应用", "p": "P54–P57", "s": "8.2.2 图式（模式）定理", "k": "阶次低、定义长度短、适应度高的图式按指数规律增长"}], "ch": ["ch8"], "nblank": 3}, {"no": "50", "stem": "包含全局最优的图式其总平均适应度不如包含局部最优的总平均适应度，这种划分称为%%，它会使遗传算法陷入局部最优。", "blanks": [["欺骗划分", "欺骗问题"]], "ana": "欺骗问题（deceptive problem）：局部最优的竞争力强于全局最优，导致 GA 早熟收敛于局部最优。", "id": "fill50", "section": "fill", "src": [{"c": "第8章 遗传算法及应用", "p": "P60–P61", "s": "8.2.2 图式划分与欺骗问题", "k": "欺骗划分（deceptive problem）使 GA 陷入局部最优"}], "ch": ["ch8"], "nblank": 1}, {"no": "51", "stem": "%%被认为是专家系统中的瓶颈问题，知识库知识常通过%%方法获得。", "blanks": [["知识获取"], ["人工移植"]], "ana": "知识获取是专家系统的“瓶颈”；工程上主要靠知识工程师访谈专家后人工移植（手工编码）入知识库。", "id": "fill51", "section": "fill", "src": [{"c": "第7章 专家系统技术", "p": "P5", "s": "7.1.1 概述（知识获取）", "k": "知识获取是专家系统的瓶颈；知识库常通过“人工移植”方法获得"}], "ch": ["ch7"], "nblank": 2}, {"no": "52", "stem": "1958 年，美国心理学家%%提出一种具有单层计算单元的神经网络，称为 Perceptron，即%%。", "blanks": [["Rosenblatt", "罗森布拉特", "弗兰克·罗森布拉特", "F.Rosenblatt"], ["感知器"]], "ana": "感知器（Perceptron）由 Rosenblatt 于 1958 年提出，是模拟人的视觉接受环境信息、由神经冲动传递信息的层次型网络。它在神经网络研究中首次提出<b>自组织、自学习</b>的思想，且有可证明的收敛算法，是研究其它网络的基础。", "id": "fill52", "section": "fill", "src": [{"c": "第4章补充 感知器", "p": "P2", "s": "3.1.1 感知器模型", "k": "1958 年 Rosenblatt 提出 Perceptron；模拟视觉接收环境信息、由神经冲动传递的层次型网络"}], "ch": ["ch4a"], "nblank": 2}, {"no": "53", "stem": "单层感知器是指只有一层%%的感知器；如果包括输入层在内，应为%%层。其中输入层也称感知层，节点只负责引入外部信息、自身无信息处理能力。", "blanks": [["处理单元", "计算单元"], ["两", "2"]], "ana": "“单层”指只有一层<b>处理（计算）层</b>；把只负责引入外部信息的输入层算进去就是两层结构：输入层 n 个节点 → 输出（处理）层 m 个节点，其间权值构成权值矩阵 W。", "id": "fill53", "section": "fill", "src": [{"c": "第4章补充 感知器", "p": "P2", "s": "3.1.1 感知器模型", "k": "单层感知器=只有一层处理单元；含输入层共两层，输入层只引入外部信息、无处理能力"}], "ch": ["ch4a"], "nblank": 2}, {"no": "54", "stem": "由净输入为零确定的分类判决方程是%%方程：在二维平面上它确定一条%%，在三维空间确定一个分界平面，在 n 维空间确定一个%%。", "blanks": [["线性"], ["分界线"], ["超平面"]], "ana": "判决方程 Σw<sub>ij</sub>x<sub>i</sub> − T<sub>j</sub> = 0 是线性方程，所以判决界面永远是“平直”的：二维是分界线、三维是分界平面、n 维是超平面。<b>这正是感知器只能解决线性可分问题的几何根源</b>。", "id": "fill54", "section": "fill", "src": [{"c": "第4章补充 感知器", "p": "P5–P12", "s": "3.1.1 感知器模型的几何意义", "k": "Σw·x − T = 0：二维分界线、三维分界平面、n 维超平面"}], "ch": ["ch4a"], "nblank": 3}, {"no": "55", "stem": "单计算节点感知器的分类原理是把分类知识存储于感知器的%%（其中包含了%%）中，由该向量确定的分类判决界面对输入模式进行分类。", "blanks": [["权向量"], ["阈值"]], "ana": "感知器把“分类知识”编码在<b>权向量</b>里，阈值也被并入权向量（令 x<sub>0</sub> ≡ −1、w<sub>0</sub> = T）。训练就是调整这个权向量，使其确定的判决界面对样本正确分类。", "id": "fill55", "section": "fill", "src": [{"c": "第4章补充 感知器", "p": "P13", "s": "3.1.2 感知器的功能", "k": "分类知识存储于权向量（含阈值），由权向量确定判决界面对输入模式分类"}], "ch": ["ch4a"], "nblank": 2}, {"no": "56", "stem": "单层感知器的局限性在于只能解决%%问题，无法解决“%%”这类线性不可分问题。", "blanks": [["线性可分"], ["异或", "XOR", "异或问题"]], "ana": "“异或”的 4 个样本在平面上任何一条直线都无法把两类分开（线性不可分），而感知器的判决界面只能是直线/平面/超平面，因此<b>单计算层感知器只对线性可分问题具有分类能力</b>。", "id": "fill56", "section": "fill", "src": [{"c": "第4章补充 感知器", "p": "P19–P20/P40–P41", "s": "3.1.3 感知器的局限性", "k": "无法解决“异或”，只能解决线性可分问题"}], "ch": ["ch4a"], "nblank": 2}, {"no": "57", "stem": "感知器学习规则为 W<sub>j</sub>(t+1) = W<sub>j</sub>(t) + η[d<sub>jp</sub> − o<sub>jp</sub>(t)]X<sub>p</sub>，其中 η 称为%%（一般取 0＜η≤1，过大会影响训练稳定性、过小则收敛慢）；该规则代表一种%%学习。", "blanks": [["学习率"], ["有导师"]], "ana": "η 是<b>学习率</b>，控制权值调整速度。当实际输出与期望输出相同时 d−o=0，权值不调整——这就是感知器学习规则是<b>有导师学习</b>的体现（d 为教师信号）。", "id": "fill57", "section": "fill", "src": [{"c": "第4章补充 感知器", "p": "P21–P23", "s": "3.1.4 感知器的学习算法", "k": "W(t+1)=W(t)+η[d−o]X，0＜η≤1；d 为教师信号 → 有导师学习"}], "ch": ["ch4a"], "nblank": 2}, {"no": "58", "stem": "克服单层感知器局限性的有效办法是：在输入层与输出层之间引入%%作为输入模式的“内部表示”，并采用%%函数作为转移函数，使区域边界线由直线变为连续光滑的曲线。", "blanks": [["隐层", "隐含层", "隐节点"], ["非线性连续"]], "ana": "两个办法并用：① 加<b>隐层</b>把单计算层感知器变成多层感知器（单隐层两个节点可构成开放式凸域，输出层再实现“与非”，即可解异或）；② 转移函数由阶跃改成<b>非线性连续</b>函数，边界线的基本线素从直线变曲线，整个边界线成为连续光滑曲线。", "id": "fill58", "section": "fill", "src": [{"c": "第4章补充 感知器", "p": "P42–P43", "s": "3.2.1 多层感知器的提出", "k": "引入隐层作“内部表示”＋非线性连续转移函数使边界由直线变光滑曲线"}], "ch": ["ch4a"], "nblank": 2}, {"no": "59", "stem": "模糊神经网络是一种集模糊逻辑推理的%%与神经网络的%%于一体的新技术，是模糊逻辑推理与神经网络有机结合的产物。", "blanks": [["强大结构性知识表达能力", "结构性知识表达能力", "知识表达能力"], ["强大自学习能力", "自学习能力"]], "ana": "模糊系统仿效人的模糊逻辑思维，<b>允许定性知识存在</b>（结构性知识表达能力强）；神经网络靠网络结构获得<b>学习能力和容错性</b>。模糊神经网络把两者的长处合到一起。", "id": "fill59", "section": "fill", "src": [{"c": "第6章 模糊神经网络", "p": "P2", "s": "第6章 引论", "k": "模糊神经网络 = 模糊逻辑推理的结构性知识表达能力 + 神经网络的自学习能力"}], "ch": ["ch6"], "nblank": 2}, {"no": "60", "stem": "目前神经元网络与模糊技术的结合方式大致有三种：%%模型、%%模型、%%模型。", "blanks": [["神经元-模糊", "神经元、模糊", "神经元模糊"], ["模糊-神经", "模糊、神经", "模糊神经"], ["神经与模糊", "神经和模糊"]], "ana": "三种结合方式按“谁为主体”区分：① 神经元-模糊模型（模糊为主体）；② 模糊-神经模型（神经网络为主体）；③ 神经与模糊模型（按输入性质分工，各自直接处理部分输入）。", "id": "fill60", "section": "fill", "src": [{"c": "第6章 模糊神经网络", "p": "P3–P5", "s": "6.1 模糊控制与神经网络的结合", "k": "三种结合方式：神经元-模糊、模糊-神经、神经与模糊模型"}], "ch": ["ch6"], "nblank": 3}, {"no": "61", "stem": "神经元-模糊模型以%%为主体，应用神经网络实现模糊控制的决策过程，以模糊控制方法为“样本”对神经网络进行%%训练学习；训练完成后该网络即成为一个具有自学习、自适应功能的%%。", "blanks": [["模糊控制"], ["离线"], ["模糊规则表"]], "ana": "这一类是“用神经网络实现模糊控制”：模糊控制是主体、神经网络是工具。以模糊控制的输入输出为<b>样本</b>（样本就是“教师”）做<b>离线</b>训练，训练好的网络相当于一张聪明、灵活、可自学习自适应的<b>模糊规则表</b>。", "id": "fill61", "section": "fill", "src": [{"c": "第6章 模糊神经网络", "p": "P3", "s": "6.1 结合方式①", "k": "神经元-模糊模型：以模糊控制为主体，离线训练后成为模糊规则表"}], "ch": ["ch6"], "nblank": 3}, {"no": "62", "stem": "模糊-神经模型以%%为主体，将输入空间分割成若干不同型式的模糊推论组合，对系统先进行模糊逻辑判断，以%%的输出作为神经网络的输入。", "blanks": [["神经网络"], ["模糊控制器"]], "ana": "这一类是“用模糊控制给神经网络喂料”：神经网络是主体，先用模糊逻辑把输入空间分割成若干模糊推论组合，把<b>模糊控制器的输出</b>作为神经网络输入，网络再靠自学习获得智能控制特性。", "id": "fill62", "section": "fill", "src": [{"c": "第6章 模糊神经网络", "p": "P4", "s": "6.1 结合方式②", "k": "模糊-神经模型：以神经网络为主体，模糊控制器输出作网络输入"}], "ch": ["ch6"], "nblank": 2}, {"no": "63", "stem": "神经与模糊模型根据输入量的不同%%，分别由神经网络与模糊控制直接处理输入信息并作用于控制对象，更能发挥各自的%%。", "blanks": [["性质"], ["控制特点"]], "ana": "第三种是“分工合作”：按输入量的性质（定量/定性、精确/模糊）分流，神经网络与模糊控制各管一部分输入，直接作用于对象，各自发挥长处。", "id": "fill63", "section": "fill", "src": [{"c": "第6章 模糊神经网络", "p": "P5", "s": "6.1 结合方式③", "k": "神经与模糊模型：按输入量性质分工，各自处理部分输入"}], "ch": ["ch6"], "nblank": 2}, {"no": "64", "stem": "第 6 章给出两种模糊神经网络模型：6.2.1 的模糊联想存储器（%%）与 6.2.2 的%%。", "blanks": [["FAM"], ["模糊推理神经网络"]], "ana": "6.2.1 <b>模糊联想存储器 FAM</b>（Fuzzy Associative Memory）——把“若 A 则 B”的模糊联想对存成网络权值；6.2.2 <b>模糊推理神经网络</b>——用网络实现模糊推理过程。", "id": "fill64", "section": "fill", "src": [{"c": "第6章 模糊神经网络", "p": "P6–P7", "s": "6.2 模糊神经网络模型", "k": "6.2.1 模糊联想存储器 FAM；6.2.2 模糊推理神经网络"}], "ch": ["ch6"], "nblank": 2}], "short": [{"no": "1", "stem": "神经网络利用其学习和自适应能力，在控制中主要起到哪些作用？", "ans": "（1）在基于精确模型的各种控制结构中充当对象的模型；<br>\n（2）在反馈控制系统中直接充当控制器的作用；<br>\n（3）在传统控制系统中起优化计算作用；<br>\n（4）在与其它智能控制方法和优化算法相融合中，为其提供对象模型、优化参数、推理模型及故障诊断等。", "ana": "四条各 1 分：<b>作模型、作控制器、作优化计算、作支撑（提供模型/参数/推理/诊断）</b>。答出四条即满分。", "id": "short1", "section": "short", "src": [{"c": "第5章 神经网络在控制中的应用", "p": "P12", "s": "5.2 神经网络控制", "k": "神经网络在控制中主要起的作用（四种）"}], "ch": ["ch5"]}, {"no": "2", "stem": "神经网络系统辨识的原理是什么？（可配图说明）", "img": "image006.png", "ans": "系统辨识的原理图见上图：对象输入 u 同时作用于对象和辨识模型，比较对象输出 y 与模型输出 ŷ 得到误差 e = y − ŷ。<br><br>\n系统辨识的原理就是通过调整辨识模型的结构来使 e 最小。<br><br>\n在神经网络系统辨识中，神经网络用作辨识模型，将对象的输入输出状态 u、y 看作神经网络的训练样本数据，以 J = ½e² 作为网络训练的目标，则通过一定的训练算法来训练网络，使 J 足够小，就可以达到辨识对象模型的目的。", "ana": "得分点：①画出原理图（u、y、ŷ、e 的比较反馈）；②“调整模型使 e 最小”；③以 u、y 为样本、J=½e² 为目标训练网络。", "id": "short2", "section": "short", "src": [{"c": "第5章 神经网络在控制中的应用", "p": "P4", "s": "5.1.2 多层前向 BP 网络的系统辨识", "k": "辨识原理图：对象与网络并联，e = y − ŷ 调整权值"}], "ch": ["ch5"]}, {"no": "3", "stem": "什么是系统辨识？神经网络辨识的基础和实质是什么？", "ans": "系统辨识是自适应控制的关键所在，它通过测量对象的输入输出状态来估计对象的数学模型，使建立的数学模型和对象具有相同的输入输出特性。<br><br>\n神经网络辨识的<b>基础</b>：神经网络对非线性函数具有任意逼近和自学习能力，为系统的辨识，尤其是非线性动态系统的辨识提供了一条十分有效的途径。<br><br>\n神经网络系统辨识的<b>实质</b>：是选择一个适当的神经网络模型来逼近实际系统的数学模型。", "ana": "三问三答：定义（等价输入输出特性）；基础（任意逼近 + 自学习）；实质（用网络逼近对象模型）。", "id": "short3", "section": "short", "src": [{"c": "第5章 神经网络在控制中的应用", "p": "P3", "s": "5.1.1 系统辨识的概念", "k": "辨识定义；神经网络辨识的基础是逼近能力，实质是选网络逼近对象模型"}], "ch": ["ch5"]}, {"no": "4", "stem": "智能控制系统的结构一般有哪几部分组成，它们之间存在什么关系？", "ans": "智能控制系统的基本结构一般由三个部分组成：<br>\n○ <b>人工智能（AI）</b>：是一个知识处理系统，具有记忆、学习、信息处理、形式语言、启发式推理等功能；<br>\n○ <b>自动控制（AC）</b>：描述系统的动力学特性，是一种动态反馈；<br>\n○ <b>运筹学（OR）</b>：是一种定量优化方法，如线性规划、网络规划、调度、管理、优化决策和多目标优化方法等。<br><br>\n三者关系：AI 处于上位，负责推理决策；AC 处于下位，负责实时动态反馈控制；OR 提供定量的优化与调度手段。三者结合（三元论）构成完整的智能控制系统。", "ana": "三元论结构：AI（知识/推理）+ AC（动态反馈）+ OR（定量优化）；能说明“上位决策—下位执行—优化协调”的关系即可。", "id": "short4", "section": "short", "src": [{"c": "第1章 绪论", "p": "P17", "s": "1.2 智能控制的基本知识", "k": "智能控制器一般结构图（接口/任务描述与建模/知识表示/规划与推理/决策与协调/传统控制）"}, {"c": "第1章 绪论", "p": "P23", "s": "1.3.2 三元交集结构理论", "k": "组成：AI（知识处理）+ AC（动态反馈）+ OR（定量优化）三者的关系"}], "ch": ["ch1"]}, {"no": "5", "stem": "比较智能控制与传统控制的特点。", "ans": "<b>传统控制</b>：包括经典反馈控制和现代控制理论。主要特征是基于精确系统数学模型的控制，适于解决线性、时不变等相对简单的控制问题。<br><br>\n<b>智能控制</b>：上述问题用智能的方法同样可以解决。智能控制是对传统控制理论的发展，传统控制是智能控制的一个组成部分，在这个意义下，两者可以统一在智能控制的框架下。<br><br>\n区别要点：传统控制“模型驱动”，智能控制“知识/经验驱动”；传统控制要求精确数学模型，智能控制可在模型未知、非线性、时变、不确定条件下工作。", "ana": "得分点：传统控制=精确数学模型、线性时不变；智能控制=不依赖精确模型、处理复杂不确定性；二者是发展与包含关系。", "id": "short5", "section": "short", "src": [{"c": "第1章 绪论", "p": "P26", "s": "1.2.4 智能控制与传统控制的关系和差别", "k": "涉及范围、控制目标、系统结构三方面的差别"}, {"c": "第1章 绪论", "p": "P46", "s": "1.3.2 智能控制的特点", "k": "智能控制的四条特点，用于对照传统控制"}], "ch": ["ch1"]}, {"no": "6", "stem": "简述智能控制系统较传统控制的优点有哪一些？", "ans": "传统控制在实际应用中遇到很多难解决的问题，主要表现在：<br>\n（1）实际系统由于存在复杂性、非线性、时变性、不确定性和不完全性等，无法获得精确的数学模型；<br>\n（2）某些复杂的和包含不确定性的控制过程无法用传统数学模型来描述，即无法解决建模问题；<br>\n（3）针对实际系统往往需要进行一些比较苛刻的线性化假设，而这些假设往往与实际系统不符合；<br>\n（4）实际控制任务复杂，而传统控制任务要求低，对机器人控制、CIMS、社会经济管理系统等复杂任务无能为力。<br><br>\n智能控制将控制理论的方法和人工智能技术灵活地结合起来，其控制方法适应对象的复杂性和不确定性，能够比较有效地解决上述问题，具有较大的优越性。", "ana": "先列传统控制四点困难（建模难、无法建模、线性化假设、复杂任务），再答智能控制的适应性优势。按点给分。", "id": "short6", "section": "short", "src": [{"c": "第1章 绪论", "p": "P14–P15", "s": "1.2.2 传统控制理论的局限性", "k": "四大难题：无精确模型 / 无法建模 / 苛刻线性化假设 / 复杂任务无能为力"}], "ch": ["ch1"]}, {"no": "7", "stem": "智能控制系统有哪些类型，各自的特点是什么？", "ans": "1）<b>分级递阶控制系统</b>：主要有三个控制级组成，按智能控制的高低分为组织级、协调级、执行级，并且这三级遵循“伴随智能递降精度递增”原则。<br>\n2）<b>专家控制系统</b>：是一个智能计算机程序系统，内部含有大量某个领域专家水平的知识与经验；具有启发性、透明性、灵活性、符号操作、不确定性推理等特点。<br>\n3）<b>神经控制系统</b>：神经网络具有某些智能和仿人控制功能，学习算法是神经网络的主要特征。<br>\n4）<b>模糊控制系统</b>：在被控对象模糊模型的基础上，运用模糊控制器近似推理手段实现控制；模糊模型用模糊语言和规则描述系统的动态特性及性能指标。<br>\n5）<b>学习控制系统</b>：模拟人类自身的控制调节机制，通过重复输入信号并从外部校正系统，使系统对特定输入具有特定响应。<br>\n6）<b>集成（复合）混合控制系统</b>：几种方法和机制结合在一起，用于实际的智能控制系统或装置。", "ana": "六类各写“名称+1句特点”。最高频的是分级递阶、专家、模糊、神经四类，务必写全其标志性表述。", "id": "short7", "section": "short", "src": [{"c": "第1章 绪论", "p": "P47", "s": "1.4 智能控制的主要形式", "k": "五类主图：分级递阶、模糊、神经网络、仿人智能、专家 + 综合集成"}, {"c": "第1章 绪论", "p": "P57–P75", "s": "1.4.2–1.4.7 各形式的特点", "k": "模糊（P57–P59）、神经（P60–P63）、专家（P64–P68）、学习（P69–P73）、仿人/集成（P74–P75）"}], "ch": ["ch1"]}, {"no": "8", "stem": "智能控制主要研究哪些内容？各自的特点是什么？", "ans": "主要集中在专家控制技术、模糊控制技术、神经网络控制技术和遗传算法等。<br><br>\n（1）<b>专家控制系统</b>：含有大量专家水平知识与经验的智能程序系统，具有启发性、透明性、灵活性、符号操作、不确定性推理等特点。<br>\n（2）<b>模糊控制系统</b>：基于被控对象的模糊模型，用模糊控制器近似推理实现控制。<br>\n（3）<b>神经控制系统</b>：神经网络具有智能和仿人控制功能，学习算法是其主要特征。<br>\n（4）<b>遗传算法</b>：基于自然选择和基因遗传学原理的搜索算法，可用于模糊控制规则的优化及神经网络参数与权值的学习，在智能控制领域应用广泛。", "ana": "注意本题与上一题区别：本题侧重“研究内容/技术分支”，答案按专家、模糊、神经、遗传四块给分（遗传算法 2 分）。", "id": "short8", "section": "short", "src": [{"c": "第1章 绪论", "p": "P18", "s": "1.2 智能控制的产生和发展（研究内容）", "k": "IC = AC ∩ AI，研究内容即各主要形式"}, {"c": "第1章 绪论", "p": "P47", "s": "1.4 智能控制的主要形式", "k": "专家/模糊/神经/遗传等各自特点"}], "ch": ["ch1"]}, {"no": "9", "stem": "简述模糊控制器的基本工作原理是什么？", "ans": "将测量得到的被控对象的状态经过<b>模糊化接口</b>转换为用人类自然语言描述的模糊量，而后根据人类的语言控制规则，经过<b>模糊推理</b>得到输出控制量的模糊取值，控制量的模糊取值再经过<b>清晰化接口</b>转换为执行机构能够接收的精确量。", "ana": "一句话链条：精确量 →模糊化→ 模糊量 →模糊推理（规则库）→ 模糊输出 →清晰化→ 精确控制量。四环节缺一扣分。", "id": "short9", "section": "short", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P5", "s": "3.1 模糊控制的工作原理", "k": "状态→模糊化→语言规则→模糊推理→清晰化→精确量"}], "ch": ["ch3"]}, {"no": "10", "stem": "模糊控制规则的提取方法在模糊控制器设计中举足轻重，模糊控制规则的生成方法归纳起来主要有几种？", "ans": "（1）<b>根据专家经验或过程控制知识生成控制规则</b>：通过对控制专家经验进行总结描述来生成特定领域的控制规则原型，经过反复实验和修正形成最终的规则库。<br>\n（2）<b>根据过程的模糊模型生成控制规则</b>：用模糊语言描述被控过程的输入输出关系得到过程的模糊模型，进而根据这种关系得到控制器的控制规则。<br>\n（3）<b>根据学习算法获取控制规则</b>：应用自适应学习算法（神经网络、遗传算法等）对控制过程的样本数据进行分析和聚类，生成和在线优化较完善的控制规则。", "ana": "三条来源：专家经验、过程模糊模型、学习算法（神经网络/遗传算法）。每条要能说清“怎么做”。", "id": "short10", "section": "short", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P26", "s": "3.2.2 规则库的产生", "k": "规则生成三途径：专家经验、过程模糊模型、学习算法（神经网络/遗传算法）"}], "ch": ["ch3"]}, {"no": "11", "stem": "模糊控制器的基本结构一般由哪四部分组成？并画出模糊控制器的基本结构图。", "img": "image007.png", "ans": "（1）<b>模糊化接口</b>：通过在控制器的输入、输出论域上定义语言变量，来将精确的输入、输出值转换为模糊的语言值。<br>\n（2）<b>规则库</b>：由数据库和语言（模糊）控制规则库组成。数据库为语言控制规则的论域离散化和隶属函数提供必要的定义；语言控制规则标记控制目标和领域专家的控制策略。<br>\n（3）<b>模糊推理</b>：是模糊控制系统的核心，根据模糊输入和模糊控制规则获得模糊输出。<br>\n（4）<b>清晰化接口</b>：模糊推理得到的模糊输出值只有转化为精确控制量才能施加于对象，实行这种转化的方法叫做清晰化/去模糊化/模糊判决。<br><br>\n结构图见上图（模糊化接口 → 模糊推理 ← 规则库 → 清晰化接口）。", "ana": "四部分 + 结构图。规则库挂在推理机上（不是串联环节），画图时不要画成直链。", "id": "short11", "section": "short", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P6–P7", "s": "3.2 模糊控制器的结构和设计", "k": "四部分结构图：模糊化接口→模糊推理←规则库→清晰化接口"}], "ch": ["ch3"]}, {"no": "12", "stem": "简述将模糊控制规则离线转化为查询表形式的模糊控制器的设计步骤。", "ans": "（1）确定模糊控制器的结构；<br>\n（2）定义输入、输出模糊集；<br>\n（3）定义输入、输出隶属函数；<br>\n（4）建立模糊控制规则；<br>\n（5）建立模糊控制表；<br>\n（6）模糊推理；<br>\n（7）反模糊化。", "ana": "七步顺序不要打乱：结构 → 模糊集 → 隶属函数 → 规则 → 控制表 → 推理 → 反模糊化。可补充“控制表可离线算好、在线查表以节省计算时间”。", "id": "short12", "section": "short", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P32–P37", "s": "3.2.5 模糊查询表 / 3.2.6 设计内容", "k": "离线计算规则合成 R、在线查表输出；设计七步"}], "ch": ["ch3"]}, {"no": "13", "stem": "模糊控制与传统控制的不同之处？", "ans": "传统控制方法均是建立在被控对象精确数学模型基础上的，然而随着系统复杂程度的提高，将难以建立系统的精确数学模型。<br><br>\n模糊控制是以模糊集理论、模糊语言变量和模糊逻辑推理为基础，从行为上模仿人的模糊推理和决策过程的一种智能控制方法。该控制方法适应对象的复杂性和不确定性，不需要依赖对象的精确数学模型即可实现复杂系统的控制。", "ana": "对比两条主线：<b>是否需要精确模型</b>、<b>知识表达与推理方式</b>（数学方程 vs 语言规则）。", "id": "short13", "section": "short", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P2", "s": "2.1 概述", "k": "模糊控制不依赖精确数学模型、用语言规则描述"}, {"c": "第1章 绪论", "p": "P57", "s": "1.4.2 以模糊系统理论为基础的模糊控制", "k": "以模糊集理论、模糊语言变量、模糊逻辑推理为基础"}], "ch": ["ch1", "ch2"]}, {"no": "14", "stem": "专家系统的知识表示中，产生式系统的基本结构由哪三部分组成？并画出产生式系统的基本结构图。", "img": "image008.jpg", "ans": "产生式系统由<b>规则库</b>（IF-THEN 规则集合）、<b>数据库</b>（综合数据库，存放事实与中间结果）和<b>控制器</b>（推理机，负责规则匹配与冲突消解）三部分组成。<br><br>\n其工作循环为：匹配 → 冲突消解 → 执行。结构图见上图。", "ana": "三部分 + 图。必须点出“匹配—冲突消解—执行”的循环，这是产生式系统的灵魂。", "id": "short14", "section": "short", "src": [{"c": "第7章 专家系统技术", "p": "P8–P11", "s": "7.2 产生式规则表示法", "k": "规则库、数据库、控制器三部分及产生式系统结构图"}], "ch": ["ch7"]}, {"no": "15", "stem": "简述神经网络具备的特征有哪些？", "ans": "（1）能逼近任意非线性函数；<br>\n（2）信息的并行分布式处理与存储；<br>\n（3）可以多输入、多输出；<br>\n（4）便于用超大规模集成电路或光学集成电路系统实现，或用现有的计算机技术实现；<br>\n（5）能进行学习，以适应环境的变化。", "ana": "五条：非线性逼近、并行分布式处理与存储、多输入多输出、易硬件实现、可学习自适应。", "id": "short15", "section": "short", "src": [{"c": "第4章 神经网络基本理论", "p": "P15–P16", "s": "4.2 神经网络的定义和特点", "k": "四大特点：并行分布处理、非线性映射、自学习自适应、容错与泛化"}], "ch": ["ch4"]}, {"no": "16", "stem": "前馈神经网络和反馈神经网络各有什么特点？", "ans": "<b>前馈神经网络</b>的特点：（1）各神经元只接收前一层的输出作为自己的输入，并且将其输出给下一层，整个网络中没有反馈；（2）是一个具有很强学习能力的系统；（3）具有复杂的非线性处理能力等。<br><br>\n<b>反馈神经网络</b>的特点：（1）每个节点只有一个输入和输出；（2）是一种反馈动力学系统；（3）具有联想记忆的功能等。", "ana": "对照记忆：前馈=无反馈、强学习、强非线性映射；反馈=动力学系统、单入单出节点、联想记忆（如 Hopfield）。", "id": "short16", "section": "short", "src": [{"c": "第4章 神经网络基本理论", "p": "P21–P22", "s": "4.4 神经网络的构成和分类", "k": "前馈（层状、单向、无反馈）/ 反馈（网状、双向、有动态记忆）"}], "ch": ["ch4"]}, {"no": "17", "stem": "专家系统的基本特征有哪些？", "ans": "○ <b>具有专家水平的知识</b>：必须表现专家的技能、高度的技巧以及足够的鲁棒性。系统的鲁棒性是指不管数据正确与否，都能够得到正确的结论或者指出错误。<br>\n○ <b>能进行有效的推理</b>：能够运用专家的经验和知识进行搜索、推理。<br>\n○ <b>具有透明性</b>：在推理时不仅能够得到答案，而且还能给出推理的依据。<br>\n○ <b>具有灵活性</b>：知识的更新和扩充灵活方便。<br>\n○ <b>复杂性</b>：人类知识可定性或定量表示，专家系统经常表现为定性推理和定量计算的混合形式，比较复杂。", "ana": "五特征：专家级知识（含鲁棒性）、有效推理、透明性（可解释）、灵活性（易扩充）、复杂性。", "id": "short17", "section": "short", "src": [{"c": "第7章 专家系统技术", "p": "P6", "s": "7.1.2 专家系统的特征", "k": "五特征：专家水平知识（含鲁棒性）、有效推理、透明性、灵活性、复杂性"}], "ch": ["ch7"]}, {"no": "18", "stem": "试述专家系统与专家控制系统的区别与联系。（拓展题）", "ans": "<b>联系</b>：专家控制系统以专家系统技术为核心，把专家系统的知识表示与推理机制引入控制系统。<br><br>\n<b>区别</b>：<br>\n（1）专家系统通常是<b>离线</b>的咨询/诊断系统，输出结论或建议，由人来执行；<br>\n（2）专家控制系统是<b>在线实时</b>的闭环系统，必须满足实时性要求，输出直接作用于执行机构；<br>\n（3）专家控制系统在知识库之外还需要实时数据库、推理机的时间约束、以及对不确定性与冲突的快速处理；<br>\n（4）专家控制系统按介入方式分为<b>直接专家控制</b>（专家系统直接给出控制量）与<b>间接专家控制</b>（专家系统整定/监督常规控制器参数）。", "ana": "本题为教材要点的综合拓展，答题抓住“离线 vs 在线实时”“开环建议 vs 闭环控制”“直接/间接两类”。", "id": "short18", "section": "short", "src": [{"c": "第7章 专家系统技术", "p": "P33–P34", "s": "7.4.1 专家控制系统概述", "k": "专家控制 vs 一般专家系统：自动/独立决策、在线实时、可靠性抗扰性"}], "ch": ["ch7"]}, {"no": "19", "stem": "什么是单层感知器？说明它的结构与功能，并从几何意义上解释它为什么只能解决线性可分问题。", "ans": "<b>1、结构与功能</b><br>\n单层感知器是指只有一层<b>处理单元</b>的感知器，包括输入层在内共两层：输入层（感知层）有 n 个节点，只负责引入外部信息、自身无信息处理能力；输出层（处理层）有 m 个节点，每个节点都有信息处理能力。两层之间的连接权值用权向量 W<sub>j</sub> 表示，m 个权向量构成权值矩阵 W。<br><br>\n其功能是把分类知识存储于<b>权向量</b>（其中包含了阈值）中，由权向量确定的分类判决界面对输入模式进行分类。<br><br>\n<b>2、几何意义</b><br>\n净输入为零时得到判决方程 Σw<sub>ij</sub>x<sub>i</sub> − T<sub>j</sub> = 0：<br>\n（1）输入为二维向量时，确定二维平面上的<b>一条分界线</b>；<br>\n（2）输入为三维向量时，确定三维空间上的<b>一个分界平面</b>；<br>\n（3）输入为 n 维向量时，确定 n 维空间上的<b>一个超平面</b>。<br><br>\n分界线之上样本使 net<sub>j</sub>&gt;0、输出为 1，之下使 net<sub>j</sub>&lt;0、输出为 −1。<br><br>\n<b>3、为什么只能线性可分</b><br>\n因为判决方程是<b>线性方程</b>，判决界面只能是一条直线/一个平面/一个超平面。凡是能用直线、平面或超平面把两类样本分开的称为<b>线性可分</b>，否则为<b>线性不可分</b>。“异或”的 4 个样本在平面上任何一条直线都无法把两类分开，所以单计算层感知器的局限性是<b>仅对线性可分问题具有分类能力</b>。", "ana": "<b>给分点</b>：结构（输入层/处理层、权值矩阵）+ 功能（分类知识存于权向量）+ 几何意义（二维分界线/三维分界平面/n 维超平面）+ 结论（线性方程 ⇒ 只能线性可分，异或不可解）。<br><b>易错</b>：把“单层感知器”当成只有一层，实际“包括输入层在内应为两层”。", "id": "short19", "section": "short", "src": [{"c": "第4章补充 感知器", "p": "P2–P13", "s": "3.1.1–3.1.2 感知器模型与功能", "k": "结构（输入层/处理层/权值矩阵）、功能（权向量存分类知识）"}, {"c": "第4章补充 感知器", "p": "P5–P12", "s": "3.1.1 几何意义", "k": "二维分界线 / 三维分界平面 / n 维超平面 → 判决方程是线性方程"}, {"c": "第4章补充 感知器", "p": "P19–P20/P40–P41", "s": "3.1.3 感知器的局限性", "k": "只能线性可分，异或问题不可解"}], "ch": ["ch4a"]}, {"no": "20", "stem": "写出感知器学习规则与训练步骤，并说明它属于哪一种学习类型。", "ans": "<b>1、感知器学习规则（Perceptron 规则）</b><br>\nW<sub>j</sub>(t+1) = W<sub>j</sub>(t) + η[d<sub>jp</sub> − o<sub>jp</sub>(t)]X<sub>p</sub>，&nbsp; j = 1, 2, …, m<br><br>\n式中 η 为学习率，用于控制调整速度：太大影响训练稳定性，太小使收敛变慢，<b>一般取 0＜η≤1</b>；d<sub>jp</sub> 为期望输出（教师信号）。当实际输出与期望值相同时 d−o=0，权值不需要调整。<br><br>\n<b>2、训练步骤</b><br>\n（1）<b>权值初始化</b>：对各权值 w<sub>0j</sub>(0), w<sub>1j</sub>(0), …, w<sub>nj</sub>(0)（j=1,2,…,m，m 为计算层节点数）赋予较小的非零随机数；<br>\n（2）<b>输入样本对</b> {X<sub>p</sub>, d<sub>p</sub>}，其中 X<sub>p</sub> = (−1, x<sub>1p</sub>, x<sub>2p</sub>, …, x<sub>np</sub>)，d<sub>p</sub> 为期望输出向量，p = 1, 2, …, P；<br>\n（3）<b>计算实际输出</b>：o<sub>jp</sub>(t) = sgn[W<sub>j</sub><sup>T</sup>(t)X<sub>p</sub>]，j = 1, 2, …, m；<br>\n（4）<b>调整权值</b>：W<sub>j</sub>(t+1) = W<sub>j</sub>(t) + η[d<sub>jp</sub> − o<sub>jp</sub>(t)]X<sub>p</sub>；<br>\n（5）返回步骤（2）输入下一对样本，周而复始，直到对所有样本，感知器的实际输出与期望输出相等。<br><br>\n<b>3、学习类型</b><br>\n由于每一步都用期望输出 d<sub>p</sub> 作教师信号来指导权值修正，感知器学习规则代表一种<b>有导师学习</b>（有监督学习）。", "ana": "<b>给分点</b>：规则公式（含 η 的取值范围与含义）+ 五个训练步骤（初始化、输入样本对、算输出、调权值、循环至全对）+ 学习类型（有导师学习）。<br><b>易错</b>：漏掉 x<sub>0</sub> ≡ −1（阈值并入权向量）这一约定；把 η 说成“越大越好”。", "id": "short20", "section": "short", "src": [{"c": "第4章补充 感知器", "p": "P21–P23", "s": "3.1.4 感知器的学习算法", "k": "W(t+1)=W(t)+η[d−o]X 与五个训练步骤；0＜η≤1"}, {"c": "第4章补充 感知器", "p": "P21", "s": "3.1.4 学习类型", "k": "d 为教师信号 → 感知器规则代表有导师学习"}], "ch": ["ch4a"]}, {"no": "21", "stem": "模糊控制与神经网络有哪三种结合方式？请分别说明每种方式中谁是主体、如何工作。", "ans": "目前神经元网络与模糊技术的结合方式大致有三种：<br><br>\n<b>1、神经元-模糊模型（以模糊控制为主体）</b><br>\n该模型以模糊控制为主体，应用神经网络实现模糊控制的决策过程；以模糊控制方法为“样本”，对神经网络进行<b>离线训练学习</b>——“样本”就是学习的“教师”。所有样本学习完以后，这个神经网络就是一张聪明、灵活的<b>模糊规则表</b>，具有自学习、自适应功能。<br><br>\n<b>2、模糊-神经模型（以神经网络为主体）</b><br>\n该模型以神经网络为主体，将输入空间分割成若干不同型式的模糊推论组合，对系统先进行模糊逻辑判断，以<b>模糊控制器的输出</b>作为神经网络的输入，后者具有自学习的智能控制特性。<br><br>\n<b>3、神经与模糊模型（按输入性质分工）</b><br>\n该模型根据输入量的不同性质，分别由神经网络与模糊控制直接处理输入信息，并作用于控制对象，更能发挥各自的控制特点。", "ana": "<b>给分点</b>：三种方式名称（3 分）+ 各自“主体是谁”（模糊 / 神经网络 / 两者分工）+ 工作方式（离线训练成规则表 / 模糊判断后作网络输入 / 按输入性质分流）。<br><b>口诀</b>：<b>谁来当主体</b>——神经元-模糊（模糊当家）、模糊-神经（神经当家）、神经与模糊（分工）。<br><b>易错</b>：把“神经元-模糊模型”说成以神经网络为主体（正好说反）。", "id": "short21", "section": "short", "src": [{"c": "第6章 模糊神经网络", "p": "P3–P5", "s": "6.1 模糊控制与神经网络的结合", "k": "①神经元-模糊（模糊为主体、离线训练成规则表）②模糊-神经（神经为主体）③神经与模糊（按输入性质分工）"}], "ch": ["ch6"]}], "calc": [{"no": "1-0", "stem": "设论域 U = {a, b, c, d, e} 上有两个模糊集分别为：<br><pre class='mat'>A = 0.5/a + 0.3/b + 0.4/c + 0.2/d + 0.1/e\nB = 0.2/a + 0.8/b + 0.1/c + 0.7/d + 0.4/e</pre>求 A∩B、A∪B 和 Ā（A 的补集）。", "ans": "<pre class='mat'>A∩B = 0.2/a + 0.3/b + 0.1/c + 0.2/d + 0.1/e\n\nA∪B = 0.5/a + 0.8/b + 0.4/c + 0.7/d + 0.4/e\n\nĀ   = 0.5/a + 0.7/b + 0.6/c + 0.8/d + 0.9/e</pre>", "ana": "逐点（逐元素）运算：<br>\n<b>交集</b>取小：μ<sub>A∩B</sub>(x) = min{μ<sub>A</sub>(x), μ<sub>B</sub>(x)}，如 a 点 min(0.5, 0.2) = 0.2。<br>\n<b>并集</b>取大：μ<sub>A∪B</sub>(x) = max{μ<sub>A</sub>(x), μ<sub>B</sub>(x)}，如 b 点 max(0.3, 0.8) = 0.8。<br>\n<b>补集</b>取 1 减：μ<sub>Ā</sub>(x) = 1 − μ<sub>A</sub>(x)，如 a 点 1 − 0.5 = 0.5。<br>\n易错：补集只对 A 取补，不要与 B 混用；并、交必须对全部 5 个元素逐个写出。", "id": "calc1", "section": "calc", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P8–P11", "s": "2.3 模糊集合的运算", "k": "交取小（∧）、并取大（∨）、补 1−μ"}], "ch": ["ch2"]}, {"no": "1-1", "stem": "设论域 U = {u₁, u₂, u₃, u₄, u₅}，两个模糊集为：<br><pre class='mat'>A = 0.2/u₁ + 0.4/u₂ + 0.9/u₃ + 1/u₄ + 0.5/u₅\nB = 0.1/u₁ + 0.7/u₃ + 1/u₄ + 0.3/u₅</pre>求 A∪B、A∩B、A<sup>c</sup>、B<sup>c</sup>。", "ans": "<pre class='mat'>A∪B = 0.2/u₁ + 0.4/u₂ + 0.9/u₃ + 1/u₄ + 0.5/u₅\n\nA∩B = 0.1/u₁ + 0/u₂ + 0.7/u₃ + 1/u₄ + 0.3/u₅\n\nAᶜ = 0.8/u₁ + 0.6/u₂ + 0.1/u₃ + 0/u₄ + 0.5/u₅\n\nBᶜ = 0.9/u₁ + 1/u₂ + 0.3/u₃ + 0/u₄ + 0.7/u₅</pre>", "ana": "关键坑：B 的表达式中<b>没有写 u₂ 项</b>，说明 μ<sub>B</sub>(u₂) = 0，必须补 0 再运算。<br>\n于是 u₂ 处：A∩B 为 min(0.4, 0) = 0；Bᶜ 为 1 − 0 = 1。<br>\nu₃ 处 A∩B = min(0.9, 0.7) = 0.7；A∪B 在 u₄ 处 max(1, 1) = 1。", "id": "calc2", "section": "calc", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P8–P11", "s": "2.3 模糊集合的运算", "k": "注意 B 中缺少 u₂ 项 → μ_B(u₂)=0，不可漏项"}], "ch": ["ch2"]}, {"no": "2", "stem": "已知两个模糊矩阵<br><pre class='mat'>        ⎡0.1 0.3⎤            ⎡0.4 0.2⎤\nR =     ⎢       ⎥    S =     ⎢       ⎥\n        ⎣0.2 0.4⎦            ⎣0.5 0.1⎦</pre>求 R∩S、R∪S 和 Rᶜ。", "ans": "<pre class='mat'>          ⎡0.1 0.2⎤            ⎡0.4 0.3⎤            ⎡0.9 0.7⎤\n\"\nR∩S =     ⎢       ⎥    R∪S =     ⎢       ⎥    Rᶜ =     ⎢       ⎥\n\"\n          ⎣0.2 0.1⎦            ⎣0.5 0.4⎦            ⎣0.8 0.6⎦</pre>", "ana": "模糊矩阵的交、并、补都是<b>对应元素</b>逐点运算：<br>\nR∩S：min 逐元素，如 (1,2) 处 min(0.3, 0.2) = 0.2；<br>\nR∪S：max 逐元素，如 (2,1) 处 max(0.2, 0.5) = 0.5；<br>\nRᶜ：每个元素用 1 减，如 (1,1) 处 1 − 0.1 = 0.9。<br>\n注意矩阵的交并不是矩阵乘法，别把 ∧ 当成“乘”。", "id": "calc3", "section": "calc", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P21–P23", "s": "2.5 模糊关系（例2.5.3）", "k": "模糊矩阵的交、并、补逐元素运算"}], "ch": ["ch2"]}, {"no": "3-0", "stem": "已知论域 X = {x₁, x₂, x₃}，Y = {y₁, y₂}，<br>A = {0.1, 0.3, 0.5}（X 上的模糊集），<br><pre class='mat'>        ⎡0.5 0.2⎤\nR =     ⎢0.3 0.1⎥\n        ⎣0.4 0.6⎦</pre>是 X×Y 上的一个模糊关系，试通过模糊变换 R 求 A 的像 B。", "ans": "<pre class='mat'>B = A ∘ R\n\n  = (0.1, 0.3, 0.5) ∘ ⎡0.5 0.2⎤\n\"\n                      ⎢0.3 0.1⎥\n\"\n                      ⎣0.4 0.6⎦\n\n  = [(0.1∧0.5)∨(0.3∧0.3)∨(0.5∧0.4),  (0.1∧0.2)∨(0.3∧0.1)∨(0.5∧0.6)]\n\n  = (0.4, 0.5)</pre>", "ana": "模糊变换用<b>最大-最小合成</b>：b<sub>j</sub> = ∨<sub>i</sub> [ a<sub>i</sub> ∧ r<sub>ij</sub> ]。<br>\nb₁ = (0.1∧0.5) ∨ (0.3∧0.3) ∨ (0.5∧0.4) = 0.1 ∨ 0.3 ∨ 0.4 = <b>0.4</b>；<br>\nb₂ = (0.1∧0.2) ∨ (0.3∧0.1) ∨ (0.5∧0.6) = 0.1 ∨ 0.1 ∨ 0.5 = <b>0.5</b>。<br>\n运算符含义：∧ 取小（相乘位置取小），∨ 取大（各行取大）——顺序不能颠倒。", "id": "calc4", "section": "calc", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P27–P28", "s": "2.5.3 模糊变换", "k": "B = A ∘ R，先取小再取大"}], "ch": ["ch2"]}, {"no": "3-2", "stem": "已知模糊矩阵<br><pre class='mat'>        ⎡0.4 0.5 0.3⎤            ⎡0.6 0.8⎤\nQ =     ⎢0.8 0.6 1  ⎥    R =     ⎢0.7 0.5⎥\n        ⎢0.2 0.8 0.4⎥            ⎣0.6 0.4⎦\n        ⎣0.7 0.2 0.8⎦</pre>求 Q∘R。", "ans": "<pre class='mat'>Q∘R = ⎡(0.4∧0.6)∨(0.5∧0.7)∨(0.3∧0.6)   (0.4∧0.8)∨(0.5∧0.5)∨(0.3∧0.4)⎤\n\"\n\"      ⎢(0.8∧0.6)∨(0.6∧0.7)∨(1∧0.6)     (0.8∧0.8)∨(0.6∧0.5)∨(1∧0.4)  ⎥\n\"\n\"      ⎢(0.2∧0.6)∨(0.8∧0.7)∨(0.4∧0.6)   (0.2∧0.8)∨(0.8∧0.5)∨(0.4∧0.4)⎥\n\"\n\"      ⎣(0.7∧0.6)∨(0.2∧0.7)∨(0.8∧0.6)   (0.7∧0.8)∨(0.2∧0.5)∨(0.8∧0.4)⎦\n\n\"\n\"    ⎡0.5 0.5⎤\n\"\n\"  = ⎢0.6 0.8⎥\n\"\n\"    ⎢0.7 0.5⎥\n\"\n\"    ⎣0.6 0.7⎦</pre>", "ana": "4×3 与 3×2 合成得 4×2。逐元素：先对应取小，再沿公共维（列 i=1..3）取大。<br>\n第 1 行第 1 列：(0.4∧0.6)=0.4，(0.5∧0.7)=0.5，(0.3∧0.6)=0.3，取大得 <b>0.5</b>；<br>\n第 2 行第 2 列：(0.8∧0.8)=0.8，(0.6∧0.5)=0.5，(1∧0.4)=0.4，取大得 <b>0.8</b>；<br>\n第 4 行第 2 列：(0.7∧0.8)=0.7，(0.2∧0.5)=0.2，(0.8∧0.4)=0.4，取大得 <b>0.7</b>。<br>\n合成过程中结果元素恒不超过参与运算的元素，若算出大于 1 或大于输入值，一定是把 ∧ 当成了乘法。", "id": "calc5", "section": "calc", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P24", "s": "2.5.2 模糊关系的合成", "k": "Q ∘ R：先逐项取小，再沿中间维取大"}], "ch": ["ch2"]}, {"no": "4", "stem": "已知控制规则为：“若 e 是 A，且 ec 是 B，那么 u 是 C”，其中<br><pre class='mat'>A = 1/a₁ + 0.5/a₂\nB = 0.1/ac₁ + 0.6/ac₂ + 1/ac₃\nC = 0.3/u₁ + 0.7/u₂ + 1/u₃</pre>试求该控制规则蕴涵的模糊关系 R。", "ans": "第一步，先求 A×B：<br>\n<pre class='mat'>        ⎡1∧0.1  1∧0.6  1∧1  ⎤   ⎡0.1 0.6 1  ⎤\n\"\nR₁ =    ⎢                    ⎥ = ⎢           ⎥\n\"\n        ⎣0.5∧0.1 0.5∧0.6 0.5∧1⎦   ⎣0.1 0.5 0.5⎦</pre>\n第二步，把 R₁ 的元素按列依次写成一列（即 R₁ᵀ 的列向量形式：(0.1, 0.6, 1, 0.1, 0.5, 0.5)ᵀ），再与 C 作“取小”外积：<br>\n<pre class='mat'>          ⎡0.1⎤\n\"\nR = R₁ᵀ×C = ⎢0.6⎥ × (0.3 0.7 1)\n\"\n          ⎢ 1 ⎥\n\"\n          ⎢0.1⎥\n\"\n          ⎢0.5⎥\n\"\n          ⎣0.5⎦\n\n\"\n        ⎡0.1∧0.3 0.1∧0.7 0.1∧1⎤   ⎡0.1 0.1 0.1⎤\n\"\n        ⎢0.6∧0.3 0.6∧0.7 0.6∧1⎥   ⎢0.3 0.6 0.6⎥\n\"\n        ⎢ 1∧0.3   1∧0.7   1∧1 ⎥ = ⎢0.3 0.7 1  ⎥\n\"\n        ⎢0.1∧0.3 0.1∧0.7 0.1∧1⎥   ⎢0.1 0.1 0.1⎥\n\"\n        ⎢0.5∧0.3 0.5∧0.7 0.5∧1⎥   ⎢0.3 0.5 0.5⎥\n\"\n        ⎣0.5∧0.3 0.5∧0.7 0.5∧1⎦   ⎣0.3 0.5 0.5⎦</pre>", "ana": "本题按教材的“两步法”书写：<br>\n① 先由前件求笛卡儿积形式的模糊关系 R₁ = A×B，元素为 min(μ<sub>A</sub>(a<sub>i</sub>), μ<sub>B</sub>(ac<sub>j</sub>))；<br>\n② 再把 R₁ 的元素按列展开成 6 元列向量，与后件 C 作 min 外积，得到 6×3 的规则关系矩阵 R。<br>\n注意：<b>规则关系矩阵的行数 = 前件元素总数（2×3=6）</b>，列数 = 后件元素数（3）。若行数写成 2 或 3 即为概念性错误。", "id": "calc6", "section": "calc", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P40–P43", "s": "2.6 多维条件语句的蕴涵关系", "k": "把多维条件先拉成列向量，再用 R = A×B 的形式合成"}], "ch": ["ch2"]}, {"no": "5", "stem": "已知语言变量 u、v 的论域 U = V = {1, 2, 3, 4, 5}，定义其模糊集合的隶属度为：<br>{小，大，很大，不很大} = {A, B, G, C}，各自隶属函数取值为：<br><pre class='mat'>μ_A(小)     = (1.0, 0.8, 0.3, 0.1, 0.0)\nμ_B(大)     = (0.0, 0.1, 0.3, 0.8, 1.0)\nμ_G(很大)   = (0.0, 0.01, 0.09, 0.64, 1.0)\nμ_C(不很大) = (1.0, 0.99, 0.91, 0.36, 0.0)</pre>试求控制规则“若 u 是小，则 v 是大”所蕴涵的模糊关系 R₁。", "ans": "取 μ<sub>R₁</sub>(u, v) = [1 − μ<sub>A</sub>(u)] ∨ [μ<sub>A</sub>(u) ∧ μ<sub>B</sub>(v)]<br><br>\n<pre class='mat'>R₁ = (1−μ_A)ᵀ ∨ (μ_Aᵀ ∧ μ_B)\n\n① min 外积 μ_Aᵀ ∧ μ_B（每行是 μ_A(u_i) 与 μ_B 逐点取小）：\n        ⎡0.0 0.1 0.3 0.8 1.0⎤\n        ⎢0.0 0.1 0.3 0.8 0.8⎥\n        ⎢0.0 0.1 0.3 0.3 0.3⎥\n        ⎢0.0 0.1 0.1 0.1 0.1⎥\n        ⎣0.0 0.0 0.0 0.0 0.0⎦\n\n② 列向量 (1−μ_A) = (0.0, 0.2, 0.7, 0.9, 1.0)ᵀ 逐行取大：\n\nR₁ =    ⎡0.0 0.1 0.3 0.8 1.0⎤   ⎡0.0⎤   ⎡0.0 0.1 0.3 0.8 1.0⎤\n        ⎢0.0 0.1 0.3 0.8 0.8⎥   ⎢0.2⎥   ⎢0.2 0.2 0.3 0.8 0.8⎥\n        ⎢0.0 0.1 0.3 0.3 0.3⎥ ∨ ⎢0.7⎥ = ⎢0.7 0.7 0.7 0.7 0.7⎥\n        ⎢0.0 0.1 0.1 0.1 0.1⎥   ⎢0.9⎥   ⎢0.9 0.9 0.9 0.9 0.9⎥\n        ⎣0.0 0.0 0.0 0.0 0.0⎦   ⎣1.0⎦   ⎣1.0 1.0 1.0 1.0 1.0⎦</pre>", "ana": "采用 Zadeh 的蕴含算子：μ<sub>R</sub> = (1 − μ<sub>A</sub>) ∨ (μ<sub>A</sub> ∧ μ<sub>B</sub>)。<br>\n① 先做 min 外积：对每个 u<sub>i</sub>，μ<sub>A</sub>(u<sub>i</sub>) 与 μ<sub>B</sub> 的五个值逐点取小；<br>\n② 再与列向量 (1−μ<sub>A</sub>(u<sub>i</sub>)) 逐行取大；<br>\n③ 例如第 2 行：min 后为 (0, 0.1, 0.3, 0.8, 0.8)，与 1−0.8=0.2 取大 → (0.2, 0.2, 0.3, 0.8, 0.8)；<br>\n④ 第 5 行 μ<sub>A</sub>=0，min 后全 0，与 1−0=1 取大得全 1——即“u 完全不属于小”时规则不构成约束。<br>\n本题 4 个语言值中只有 A、B 参与计算；很大/不很大用于后续合成推理，此处为干扰信息。", "id": "calc7", "section": "calc", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P36", "s": "2.6 语言规则中蕴涵的模糊关系（例2.6.2）", "k": "Zadeh 蕴含算子 μ_R = (1−μ_A) ∨ (μ_A ∧ μ_B)"}], "ch": ["ch2"]}, {"no": "6", "stem": "设 u = {x₁, x₂, x₃, x₄}，A、B、C 是论域上的三个模糊集合，已知<br><pre class='mat'>A = 0.1/x₁ + 0.2/x₂ + 0.8/x₃ + 0.7/x₄\nB = 0/x₁   + 0.4/x₂ + 0.6/x₃ + 1/x₄\nC = 0.3/x₁ + 0.2/x₂ + 1/x₃   + 0.4/x₄</pre>求模糊集合 R = A∩B∩C，S = A∪B∪C，T = (A∪B)∩C。", "ans": "<pre class='mat'>R = A∩B∩C = 0.1/x₁ + 0.2/x₂ + 0.6/x₃ + 0.4/x₄\n\nS = A∪B∪C = 0.3/x₁ + 0.4/x₂ + 1/x₃   + 1/x₄\n\nT = (A∪B)∩C = 0.1/x₁ + 0.2/x₂ + 0.8/x₃ + 0.4/x₄</pre>", "ana": "分步计算：<br>\nA∪B = 0.1/x₁ + 0.4/x₂ + 0.8/x₃ + 1/x₄（逐点取大）；<br>\nR = A∩B∩C：x₁ min(0.1,0,0.3)=0.1；x₂ min(0.2,0.4,0.2)=0.2；x₃ min(0.8,0.6,1)=0.6；x₄ min(0.7,1,0.4)=0.4。<br>\nS = A∪B∪C 先取 A∪B 再与 C 取大：x₁ max(0.1,0.3)=0.3；x₂ max(0.4,0.2)=0.4；x₃ max(0.8,1)=1；x₄ max(1,0.4)=1。<br>\nT=(A∪B)∩C：x₁ min(0.1,0.3)=0.1；x₂ min(0.4,0.2)=0.2；x₃ min(0.8,1)=0.8；x₄ min(1,0.4)=0.4。<br>\n注意 T 与 R、S 都不同：交并对同一元素不能随意交换结合（本题 T 用的是先并后交）。", "id": "calc8", "section": "calc", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P11", "s": "2.3 模糊集合的运算", "k": "三个模糊集的交、并、混合运算都按逐点 ∧ / ∨"}], "ch": ["ch2"]}, {"no": "7", "stem": "已知模糊关系 R 表示“子女与父亲、叔父”的“相似”关系，模糊关系 S 表示“父亲、叔父与其父母（祖父、祖母）”的“相似”关系，R、S 分别为：<br><pre class='mat'>        ⎡     父   叔 ⎤            ⎡     祖父  祖母⎤\nR = 子  ⎢   0.8  0.2⎥        S = 父 ⎢   0.2   0.7 ⎥\n    女  ⎣   0.3  0.5⎦          叔 ⎣   0.9   0.1 ⎦</pre>求子女与祖父、祖母的“相似”关系 C。", "ans": "由 μ<sub>C</sub>(x, z) = ∨<sub>y</sub> [ μ<sub>R</sub>(x, y) ∧ μ<sub>S</sub>(y, z) ] 得：<br><br>\n<pre class='mat'>        ⎡(0.8∧0.2)∨(0.2∧0.9)   (0.8∧0.7)∨(0.2∧0.1)⎤\nR∘S =   ⎣(0.3∧0.2)∨(0.5∧0.9)   (0.3∧0.7)∨(0.5∧0.1)⎦\n\n        ⎡0.2∨0.2   0.7∨0.1⎤   ⎡0.2  0.7⎤   祖父 祖母\n    =   ⎣0.2∨0.5   0.3∨0.1⎦ = ⎣0.5  0.3⎦  ┌子\n                                            └女</pre>", "ans_note": "", "ana": "这是模糊关系的<b>合成</b>（最大-最小合成），与矩阵乘法结构相同但运算替换为 ∧/∨：<br>\nμ<sub>C</sub>(子, 祖父) = (0.8∧0.2) ∨ (0.2∧0.9) = 0.2 ∨ 0.2 = <b>0.2</b>；<br>\nμ<sub>C</sub>(子, 祖母) = (0.8∧0.7) ∨ (0.2∧0.1) = 0.7 ∨ 0.1 = <b>0.7</b>；<br>\nμ<sub>C</sub>(女, 祖父) = (0.3∧0.2) ∨ (0.5∧0.9) = 0.2 ∨ 0.5 = <b>0.5</b>；<br>\nμ<sub>C</sub>(女, 祖母) = (0.3∧0.7) ∨ (0.5∧0.1) = 0.3 ∨ 0.1 = <b>0.3</b>。<br>\n结论：儿子更像祖母(0.7)，女儿更像祖父(0.5)。合成时“中间媒介”是父/叔这一层。", "id": "calc9", "section": "calc", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P25–P26", "s": "2.5.2 模糊关系合成（例2.5.4）", "k": "子女与父叔、父叔与祖父母两个关系的合成 C = R ∘ S"}], "ch": ["ch2"]}, {"no": "8", "stem": "艺术学院招生，对考生所需考察的素质有：{歌舞，表演，外在}。对各种素质的评语分为四个等级 {好，较好，一般，差}。某学生表演完毕后，评委对其评价为：<br><br><table class='tb'><tr><th></th><th>好</th><th>较好</th><th>一般</th><th>差</th></tr><tr><td>歌舞</td><td>30%</td><td>30%</td><td>20%</td><td>20%</td></tr><tr><td>表演</td><td>10%</td><td>20%</td><td>50%</td><td>20%</td></tr><tr><td>外在</td><td>40%</td><td>40%</td><td>10%</td><td>10%</td></tr></table><br>如果考察学生培养为电影演员的潜质，则对表演要求较高，其它较低。定义加权模糊集为 A = {0.25, 0.5, 0.25}，试根据模糊变换得到评委对该学生培养为电影演员的最终结论。", "ans": "根据模糊变换可以得到评委对该学生培养为电影演员的决策集：<br><br>\n<pre class='mat'>                     ⎡0.3 0.3 0.2 0.2⎤\n\"\nB = A∘R = (0.25 0.5 0.25) ∘ ⎢0.1 0.2 0.5 0.2⎥\n\"\n                     ⎣0.4 0.4 0.1 0.1⎦\n\n\"\n  = (0.25, 0.25, 0.5, 0.2)</pre>\n综合评判：选取隶属度最大的元素作为最终评语 —— 最大值为 0.5，对应“一般”，<br>\n故评委对该学生培养为电影演员的最终结论为 <b>“一般”</b>。", "ana": "这是模糊综合评判的完整流程：①由评语表构造单因素评价矩阵 R；②用权重向量 A 作 max-min 合成得评判向量 B；③按最大隶属度原则定结论。<br>\n逐列计算：<br>\nb₁(好) = (0.25∧0.3)∨(0.5∧0.1)∨(0.25∧0.4) = 0.25∨0.1∨0.25 = <b>0.25</b>；<br>\nb₂(较好) = (0.25∧0.3)∨(0.5∧0.2)∨(0.25∧0.4) = 0.25∨0.2∨0.25 = <b>0.25</b>；<br>\nb₃(一般) = (0.25∧0.2)∨(0.5∧0.5)∨(0.25∧0.1) = 0.2∨0.5∨0.1 = <b>0.5</b>；<br>\nb₄(差) = (0.25∧0.2)∨(0.5∧0.2)∨(0.25∧0.1) = 0.2∨0.2∨0.1 = <b>0.2</b>。<br>\n结论取最大分量 0.5 所对应的等级“一般”。切勿用加权平均法算出 0.25/0.25/0.5/0.2 后求和归一，题目要求的是<b>最大隶属度</b>判据。", "id": "calc10", "section": "calc", "src": [{"c": "第2章 模糊控制的数学基础", "p": "P29–P30", "s": "例2.5.6 艺术学院招生（模糊综合评判）", "k": "B = A ∘ R，按最大隶属度原则下结论"}], "ch": ["ch2"]}], "essay": [{"no": "1", "stem": "试画出三层 BP 网络结构图，并阐述 BP 网络算法的基本思想，最后论述对 BP 网络算法的改进。", "ans": "<b>三层 BP 网络结构</b>：输入层 → 隐层 → 输出层，层间全连接、同层无连接、无反馈；信号正向传播，误差反向传播。<br><br>\n<b>基本思想</b>：误差反传算法调整网络的权值，使网络的实际输出尽可能接近期望的输出。即正向传播时输入经隐层逐层处理传向输出层；若输出层得不到期望输出，则转入反向传播，把误差信号（理想输出与实际输出之差）沿原连接通路反传，用梯度下降法调整各层权值，使误差信号减小。<br><br>\n<b>改进 1：增加动量项</b><br>\n○ 提出原因：标准 BP 算法只按 t 时刻误差的梯度降方向调整，没有考虑 t 时刻以前的梯度方向，从而常使训练过程发生振荡、收敛缓慢。<br>\n○ 基本思想：从前一次权值调整量中取出一部分迭加到本次权值调整量中。动量项反映了以前积累的调整经验，对 t 时刻的调整起阻尼作用；当误差曲面出现骤然起伏时，可减小振荡趋势、提高训练速度。<br><br>\n<b>改进 2：自适应调节学习率</b><br>\n○ 提出原因：标准 BP 算法中学习率 η（步长）确定一个从始至终都合适的最佳值很难——平坦区域内 η 太小会使训练次数增加；误差变化剧烈区域 η 太大会因调整量过大跨过较窄的“坑凹”处，使训练振荡、迭代次数反而增加。<br>\n○ 基本思想：自适应改变学习率，使其根据环境变化增大或减小。<br><br>\n<b>改进 3：引入陡度因子</b><br>\n○ 提出原因：误差曲面上存在平坦区域，权值调整进入平坦区的原因是神经元输出进入了转移函数的饱和区。<br>\n○ 基本思想：在调整进入平坦区后，设法压缩神经元的净输入，使其输出退出转移函数的不饱和区，从而改变误差函数形状，使调整脱离平坦区。", "ana": "三块内容按分值分配：结构图（约 3 分）、基本思想（约 3 分）、三点改进（约 4 分，每点“原因+做法”）。<br>\n<b>画图要点</b>：三层方框（输入层 n 个节点、隐层 m 个节点、输出层 l 个节点），相邻层全连接箭头单向向右，标出 x、y、w<sub>ij</sub>、期望输出 d、误差 e。<br>\n<b>易丢分</b>：只写“加动量项”而不写原因；把学习率改进写成“调大学习率”（应是自适应可增可减）；陡度因子说成“改变激活函数类型”（应是压缩净输入使输出退出饱和区）。", "id": "essay1", "section": "essay", "src": [{"c": "第4章补充 BP 网络设计", "p": "P2–P7", "s": "3.4 基于 BP 算法的多层前馈网络模型", "k": "三层结构 X-Y-O 与 V/W 权矩阵；BP 基本思想与学习过程"}, {"c": "第4章补充 BP 算法", "p": "P5–P17", "s": "3.4 BP 算法推导", "k": "Δw=ηδy、δo=(d−o)o(1−o) 的完整推导"}, {"c": "第4章补充 BP 网络设计", "p": "P21–P27", "s": "3.4.2 BP 算法的改进", "k": "三改进：动量项、自适应学习率、陡度因子 λ"}], "ch": ["ch4b", "ch4c"]}, {"no": "2", "stem": "简述遗传算法的基本思想、基本步骤，并画出其算法框图。", "img": "image092.jpg", "ans": "<b>基本思想</b><br>\n1、基于模仿生物界遗传学的遗传过程，把问题的参数用基因来表示，把问题的解用染色体来表示（在计算机里用二进制码表示），从而得到一个由具有不同染色体的个体组成的群体。<br>\n2、这个群体在问题特定的环境里生存竞争，适者有最好的机会生存和产生后代，后代随机化地继承父代的最好特征，并也在生存环境的控制支配下继续这一过程。<br>\n3、群体的染色体都将逐渐适应环境，不断进化，最后收敛到一族最适应环境的类似个体，即得到问题最优解。<br><br>\n<b>基本步骤</b><br>\n1）编码：把问题的解表示成“染色体”，在算法中就是以二进制编码的串，给出一群“染色体”，也就是假设的可行解；<br>\n2）产生初始群体：随机产生初始化群体；<br>\n3）计算群体的适应性值：定义适应函数，便于计算适应值；<br>\n4）以概率选择遗传算子：确定遗传策略，包括选择群体大小，选择、交叉、变异方法以及确定交叉概率、变异概率等遗传参数，形成下一代群体；<br>\n5）判断群体性能是否满足某一指标，或者已完成预定的迭代次数，不满足则返回第三步，或修改遗传策略再返回第四步。<br><br>\n<b>算法框图见上图</b>（编码并生成初始群体 → 计算适应值 → 选择/交叉/变异 → 生成新群体 → 满足终止条件？否：返回计算适应值；是：输出最优解）。", "ana": "<b>给分要点</b>：基本思想（3 分，“参数→基因、解→染色体、群体进化收敛到最优”）；五步流程（4 分）；框图（3 分）。<br>\n<b>框图六框</b>：①参数编码 ②初始化群体 ③计算个体适应度 ④选择 ⑤交叉 ⑥变异 → ⑦判断终止条件（不满足回到③）。<br>\n<b>易错</b>：把“变异”写在“交叉”之前（顺序应为选择→交叉→变异）；漏写终止条件分支；把适应度函数与目标函数混为一谈（求最小值问题时需作倒数等变换）。", "id": "essay2", "section": "essay", "src": [{"c": "第8章 遗传算法及应用", "p": "P6", "s": "8.1.1 遗传算法的基本原理", "k": "基本思想：参数编码为染色体，群体在环境中竞争"}, {"c": "第8章 遗传算法及应用", "p": "P29", "s": "SGA 的框图", "k": "初始化→评价→选择→交叉→变异→终止判断"}, {"c": "第8章 遗传算法及应用", "p": "P31–P33", "s": "8.1 基本遗传算法的步骤", "k": "编码、初始群体、适应度、选择、交叉、变异、终止"}], "ch": ["ch8"]}, {"no": "3", "stem": "画出静态多层前向人工神经网络（BP 网络）的结构图，并简述 BP 神经网络的工作过程。", "img": "image093.jpg", "ans": "结构图见上图：输入层—隐层—输出层的三层前向网络，层间全连接、同层无连接。<br><br>\nBP 算法的学习过程由<b>正向传播</b>和<b>反向传播</b>组成。<br><br>\n在正向传播过程中，输入信息从输入层经隐层逐层处理，并传向输出层，每层神经元（节点）的状态只影响下一层神经元的状态。<br><br>\n如果在输出层不能得到期望的输出，则转至反向传播，将误差信号（理想输出与实际输出之差）按联接通路反向计算，由梯度下降法调整各层神经元的权值，使误差信号减小。", "ana": "本题与论述题 1 的区别：只要“结构图 + 工作过程”，不要求展开改进措施。<br>\n<b>答题框架</b>：图（3 分）+ 正向传播（3 分）+ 误差反传与权值修正（4 分）。<br>\n关键句必须出现：“每层神经元的状态只影响下一层”“由梯度下降法调整各层权值”“使误差信号减小”。", "id": "essay3", "section": "essay", "src": [{"c": "第4章补充 BP 网络设计", "p": "P2–P7", "s": "3.4 基于 BP 算法的多层前馈网络模型", "k": "静态多层前向网络结构图与工作过程：前向计算 + 误差反传"}], "ch": ["ch4c"]}, {"no": "4", "stem": "试画出神经网络内模控制系统的结构图，并根据该结构图叙述其工作原理。", "img": "image094.png", "ans": "<b>1．神经网络内模控制的结构</b>（见上图，3 分）：参考输入 r 经比较后送入线性滤波器，滤波后送入神经网络控制器 NNC(P̂⁻¹)，其输出 u 作用于被控对象 P；对象的输出 y 与神经网络辨识器 NNI(P̂) 的输出 ŷ 比较得到 f = ŷ − y，反馈回参考输入端。<br><br>\n<b>2．主要特点及工作原理</b>（7 分）<br>\n内模控制既保留了直接逆控制的优点，又可以较好地解决直接逆控制存在的问题。结构图中 P 是被控对象的非线性模型，d 是系统内部扰动，NNI 是神经网络辨识器，用来辨识被控对象的正模型 P̂（内部模型）；NNC 是神经网络控制器，用来实现对象的逆模型 P̂⁻¹；线性滤波器是惯性环节或积分环节，可以补偿 NNC 中的纯微分环节并平滑 e 的变化，以防止控制信号 u 进入饱和区。<br><br>\n内模控制将被控对象与内部模型的输入误差反馈到参考输入端，构成了闭环控制。如果 NNI 能够完全准确地表达对象的输入输出关系，即 P̂ = P，且系统不存在任何干扰，则反馈信号 f = 0，系统相当于开环，与直接逆控制没有什么区别；若由于模型不准以及存在干扰使反馈信号 f 不为 0，则由于负反馈的作用，仍可使 y 接近 r，因此内模控制具有很好的鲁棒性。", "ana": "<b>给分要点</b>：结构图 3 分（必须有 NNC、对象 P、NNI、滤波器、两个相加点）；特点与原理 7 分，其中“正模型 P̂ / 逆模型 P̂⁻¹ / 滤波器作用 / 误差反馈构成闭环 / 理想时等效开环 / 模型不准时靠负反馈保鲁棒性”各占要点。<br>\n<b>易错</b>：把 NNI 说成“辨识逆模型”（NNI 辨识的是正模型 P̂，NNC 才实现逆模型）；漏掉滤波器的作用（补偿纯微分、防饱和）。", "id": "essay4", "section": "essay", "src": [{"c": "第5章 神经网络在控制中的应用", "p": "P15", "s": "5.2.3 神经网络内模控制", "k": "结构图：滤波器→NNC(P̂⁻¹)→对象 P，NNI(P̂) 并联，f = ŷ − y 反馈"}], "ch": ["ch5"]}, {"no": "5", "stem": "试画出神经网络模型参考直接自适应控制系统的结构图，并根据结构图叙述其工作原理。", "img": "image098.jpg", "ans": "结构图见上图：参考输入 r 同时作用于参考模型与被控对象；神经网络控制器 NNC 的输出 u 驱动被控对象得到 y；参考模型输出 y<sub>m</sub>；以 e = y<sub>m</sub> − y 为误差信号在线训练 NNC，使其误差函数最小。<br><br>\n<b>工作原理</b>：模型参考自适应控制的目的是，系统在相同输入激励 r 的作用下，使被控对象的输出 y 与参考模型的输出 y<sub>m</sub> 达到一致。这样通过调整参考模型，可以调整系统的动态特性。<br><br>\n神经网络控制器（NNC）先离线学习被控对象的逆动力学模型，与被控对象构成开环串联控制；而后神经网络根据参考模型输出与被控对象输出的误差函数进行在线训练，使误差函数最小。", "ana": "<b>给分要点</b>：图（参考模型与对象并联、NNC 在前、误差 e=y<sub>m</sub>−y 反传训练 NNC）；目的（y 跟踪 y<sub>m</sub>，从而整定系统动态特性）；两阶段（先离线学逆模型作开环串联 → 再在线按误差训练）。<br>\n<b>与内模控制区别</b>：内模控制靠“对象与内部模型的误差”反馈到输入端；模型参考控制靠“对象与参考模型的输出误差”训练控制器。", "id": "essay5", "section": "essay", "src": [{"c": "第5章 神经网络在控制中的应用", "p": "P16", "s": "5.2.4(1) 模型参考直接自适应控制", "k": "参考模型输出 ym 与对象输出 y 的偏差 e 直接调整 NNC"}], "ch": ["ch5"]}, {"no": "6", "stem": "试说一说模糊控制的优缺点，模糊控制的改进方法有哪一些？", "ans": "<b>优点</b><br>\n① 设计时不需要建立被控制对象的数学模型，只要求掌握人类的控制经验；<br>\n② 系统的鲁棒性强，尤其适用于非线性、时变、滞后系统的控制。<br><br>\n<b>缺点</b><br>\n① 确立模糊化和逆模糊化的方法时缺乏系统的方法，主要靠经验和试凑；<br>\n② 总结模糊控制规则有时比较困难；<br>\n③ 控制规则一旦确定不能在线调整，不能很好地适应情况的变化；<br>\n④ 模糊控制器由于不具有积分环节，因而稳态精度不高。<br><br>\n<b>改进方法</b>大体分三方面：模糊复合控制、自适应和自学习模糊控制、模糊控制与智能化方法的结合。<br><br>\n1、<b>模糊复合控制</b>：Fuzzy-PID 复合控制（误差大时用模糊控制、误差小时用 PID，兼顾动态响应与稳态精度，也可让模糊控制器与 I 调节器共同合成控制作用）；模糊-线性复合控制（如模糊-前馈补偿，利用模糊控制是变增益 PI 控制器的特点）；史密斯-模糊控制器（针对纯滞后特性，用模糊控制器替代 PID 解决常规史密斯-PID 对参数变化适应能力弱的缺陷）；三维模糊控制器（用 E、Ec、Ecc 或 E、Ec、∑E 作三维输入，解决快速性与稳定性的矛盾、提高稳态精度）；多变量模糊控制（结构分解与分层分级，用多个简单模糊控制器组合）。<br>\n2、<b>自适应和自学习模糊控制</b>：自校正模糊控制器（修改控制规则或基于模糊模型）；参数自调整模糊控制（自调整比例因子、基于模糊推理的 PID 自整定）；模型参考自适应模糊控制器（用参考模型输出与系统输出的偏差修正比例因子、解模糊策略、控制规则）；具有自学习功能的模糊控制（自寻优模糊控制器，关键在学习和寻优算法的速度与效率）；自组织模糊控制器（参考模型 + 自组织机制的模糊模型参考学习控制、自适应递阶模糊控制）。<br>\n3、<b>模糊控制与其它智能控制方法的结合</b>：专家模糊控制（专家系统弥补模糊控制器结构过于简单、规则单一的缺陷）；基于神经网络的模糊控制（用神经网络实现模糊控制规则或模糊推理、自适应神经模糊控制、模糊神经网络获取隶属函数与推理规则）；模糊系统与遗传算法相结合（优化模糊控制规则与参数）。<br>\n此外，模糊预测控制、模糊变结构方法、模糊系统建模及参数辨识、模糊模式识别等也属于较前沿的研究方向。", "ana": "<b>给分要点</b>：优点 2 条（不需精确模型；鲁棒性强、适于非线性时变滞后）+ 缺点 4 条 + 改进三大方向并各举 2–3 例。<br>\n<b>必答的“三大方向”</b>：模糊复合控制、自适应与自学习模糊控制、与其它智能方法结合。<br>\n<b>易错</b>：把“模糊控制器没有积分环节所以稳态精度不高”漏掉——这是缺点里最常考的一条，也正是 Fuzzy-PID 复合控制存在的理由。", "id": "essay6", "section": "essay", "src": [{"c": "第3章 模糊控制的设计方法", "p": "P50", "s": "3.2.8 模糊控制的优缺点", "k": "优点四条 / 缺点四条"}, {"c": "第3章 模糊控制的设计方法", "p": "P52–P70", "s": "3.3 模糊控制的改进方法", "k": "与 PID 结合（双模/串联/并联）、自校正（参数/规则）、变结构"}], "ch": ["ch3"]}, {"no": "7", "stem": "专家系统的基本结构一般由哪五部分组成？要求对每个部分做出解释，并画出专家系统的基本结构图。", "img": "image099.jpg", "ans": "专家系统是一个具有大量专门知识与经验的程序系统，根据某个领域的专家提供的知识和经验进行推理和判断，模拟人类专家的决策过程。<br><br>\n一般专家系统由<b>知识库、数据库、推理机、解释器及知识获取器</b>五个部分组成（结构图见上图）。<br><br>\n（1）<b>知识库</b>：用于存取和管理所获取的专家知识和经验，供推理机利用，具有知识存储、检索、编辑、增删、修改和扩充等功能。<br>\n（2）<b>数据库</b>：用来存放系统推理过程中用到的控制信息、中间假设和中间结果。<br>\n（3）<b>推理机</b>：用于利用知识进行推理、求解专门问题，具有启发推理、算法推理，正向、反向或双向推理，串行或并行推理等功能。<br>\n（4）<b>解释器</b>：作为专家系统与用户之间的“人-机”接口，其功能是向用户解释系统的行为。<br>\n（5）<b>知识获取</b>：是专家系统与专家的“界面”。知识库中的知识一般都是通过“人工移植”方法获得，“界面”就是知识工程师（专家系统的设计者），采用“专题面谈”“口语记录分析”等方式获取知识，经过整理以后再输入知识库。", "ana": "<b>给分要点</b>：五部分名称（3 分）+ 每部分解释（4 分）+ 结构图（3 分）。<br>\n<b>结构图关系</b>：知识库 ↔ 推理机 ↔ 数据库构成推理内核；解释器连用户；知识获取连知识工程师与知识库。<br>\n<b>易错</b>：把“知识获取”写成“知识获取器”后不作解释；漏掉“知识获取是专家系统的瓶颈”这一结论性表述（可加分）。", "id": "essay7", "section": "essay", "src": [{"c": "第7章 专家系统技术", "p": "P3–P5", "s": "7.1.1 概述", "k": "五部分组成、各部分功能与专家系统结构图"}], "ch": ["ch7"]}]};
+const IMGS = {"image006.png": "data:image/png;base64,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", "image007.png": "data:image/png;base64,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", "image008.jpg": "data:image/jpeg;base64,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", "image092.jpg": "data:image/jpeg;base64,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", "image093.jpg": "data:image/jpeg;base64,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", "image094.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAccAAACICAYAAACShSC/AAAAAXNSR0ICQMB9xQAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUATWljcm9zb2Z0IE9mZmljZX/tNXEAABU7SURBVHja7Z09bNxWnsDHH4zpzCmRv8eWEoydxNY5RqyDvYEQA4aaBCpVpFCzgNIpSOPiCl0R2EFwcJHCwDWqAuEqF4tA1ULdClu5VCngilW1ULG30AV3ezpsw+OfwydRND/eIx85JOf3gB8SjzjDGfK99+P/ffZ++OGHHgAAAJzARQAAAECOAAAAyBEAAMqIotfbQY4AAACn5eghRwAAAOTIjQcAAOSIHAEAADkiRwCA7uDVnESO40xjlaPX8USBAgDkiByRI3IEaFUFTJlFjsiRggZABUyZRY7IETkCUAFTZpEjckSOAFTAlFnkiByRIwAVMGUWOSJH5AhABUyZRY7IETkCUAFTZpEjckSOAFTAlFnuDXJEjgCAHLt/b1x3yhee4zm+9Kb6feSIHAEAOXJvJDm+IPuO3kchR+QIAMhxQuTY96ZcBzm2SY7yRKN70yhoAMiRe2OW+v0pz+k5Wk2qyBE5AgBy7OS9CWTo9Ef9jE4viBp1m1TLyLEXnLPnuc5J36bU79F/d0aOpzpyXTe4yLqdusgRADlSZuu9NyLGnuP6MhxFiurfJnVsmchRnBFEqb4v1Pdx5fxdk+PJj3O8vi9GV3Cc0nJUTxhJ2JDv8Q/u9XbTzjPJzM/PUxlB4QpY6oFeUCc4kYdcs+gEOVZzb6Rujd6XURTpHssqKb1588Z7/vz5MVJHRP+9t7dnFrXG5NjPOHer5TgKi+XH2osW64ocx9123tTUxJ2+Rdg8uIzvAckkMpDKN5BhpNxKpVymHCPB8nJMasLUadY8ODjw76ubmE8Gg4F3dHRkJMdeIEfn+EHKNNhpjRzjTyLIETlWkjm5V2PNAybvTYoOTAZ82K4Qu9hCFH14Mamro3Vp0C0Wi/DT0rNnzxK/x6tXrzzTvKGacd2gbndrzQu1ydFGps9LyHH8FSNyJA+YltnTgy7KNamWrRC7mHei90f7PZFARkX20qQqzZp5LX9J0aNp1ChJydF1HePmVBt5oTY5mkwcLZqQ4/grRuRIHjB6b6QSDgZgOE7pMkzeSb8/uu+JDqCU+6OCG92Wv3j0aBo1nsofTrua2AvIsW9dXHUkKlyzihE5kgd03xdtUh31P7phdNIvNS6BvJN+f+o6ZzR6LBI1qlSkn9FWXqi1z7GNiQrXrGJEjuQB3fepARdqkF4/HLovzWhj7HPs9P2p87wqejSJGl33ZEZD0IRrabYBcqwgUeGaVYzIkTzQlDJL3nn7/tR5Xokeh8OhUdToBM25o6ZcG+NTkGMNBY0KN7/gIUfyAHJs9v2p+9z7+/utzQvIUfPi2i40ZT8v6/1Jw6izXrdZMSLHyUvIsT33p65zbm9ve2tra97i4mKANLHKAgFtygutkqOE569fv/bW19e9lZUV7+XLl0YrLpS5uEUKjYnATN6r89lJ/0573WbFiByrTTfu/ia45p/fvd7Iyhc5Ni/ZkqNOFHh4eOitrq56S0tL3sbGhrezsxMg/Y4LCwtB3d2WvNAaOcpTh0xmVVJUkpybmwv+W3Q0lO7FLbyAbsr7dD4vekzeRN+sz+6SHP300mc4iXIczA69z+8Mgv937j31HtweaL3v0vS0d372iffo7FnvxrUrlVa+bZCjn5brzjtlHnZt3p8ynyPLv0kf4ubmZuoxEiVm/V0+QyLKpuQFw7pnmFf3WJWjhN95aWtrK3jqSIsSRZbLy8ulBSlPRnJz5UknfnHLZN6sZs28Jk4dsSX9ravNqn7aD7/7ZlpGpVn17SSCvHtzHjme5CFhtQlyLFIvFL0/ZT5HrZUqJElSokNpPs1LUldLnd6EvGBY9yzm1T1W5SjRoMyDEcHJ6KZ4ktfkmKS/xW+cUCaJHNXNV5K0WWjyhGZSuLI+q0xBLVsx1ihHLy2jtlWOVS6UkSZHJ1gmzC312S2Vo8o/pyRZtPukaDeJSfeIjftT5nOickyS5LSfx6RZNS/t7u4GdXoT8kJBOXpZkrRWEERC0RNKe3W041aeRHTmyUjUKDcqT6JZKSrHCDs+CzYElNZMavreIgWniiZVudbhb1iskYOUJ+zjjKr729Q8O/UZU7EdCGTpquPPd0arhegcG1+cObpzzPGWbU7faFFnaUaN/+aHH57zZgZ6fY9pciyyDVFW5ZtVJ0gZlYfgcVeICQ9Yx5K0+RCcFwmarpFa5vtUzczMjPfRRx9pfydZIKBMS584Quf9FcsxUZLW5CghdtIJpRlVnkg+++yz4ElD97PkPWqEVBwRb3T7lDhpC+YqdL9HlpBM+wl1MnjZglA0SZN45AGiLo5Sfoe8/qrI07+SpBLXKSnFliQscmxUekpG0feric9587qi/YwiO/n3k9nzwf+r16RvMXpd1N+zmlXji3+bpJQHylZjS455r5kcW1aOVUWOKqCRMSBSx+omCWR++umnruWdRS05SqGJiicuKmlKzTqRPFnI+95//32tUF2SyE0uuBohFUfEWacck54kdWWZ9l6bzbE2UgOaVQMp+gyKNo2pfUaPpRWL6OLC0zn2eNHklGhwtJziSEY6WzSJ3GZuPfZuz944fu3m7U+1B9nk9TmWadLVzQPhgIb9BoxmTooct3zmy45KN20+rStyrEKOIkU1glXq6OnwIS0vmRybJVed0bNjjRxzCsKLCPHmMdUE9iolowaV3aVLl/6kK6Uvv/zyv7JGoml+Z2uFJk+ORd6rK7s84VbRn1FzxXYYl2IZOcrixirSi0oiSY46x6qFm/MWatbdrUZGqj6+NXMcJUqSaR3RyDErqWbZtOOPd10vsCpJy+UYlG9bo9LTRKn7uVX0l9sqo2E9ntrX9t577/1ZZ2qdtDhdu3btjYV7OKw535j1OVq84F64l9pi7IL/u8yX0Un+sX9LqiwLyvH004CFqRymhUXnvWnRqO53s7EYQc0ZdDfMM9O2huMr4SnBqeWrsuSYd6z6W15EqLOBrCSJEp/eO/msmU/ue2fO3NGezqFzDYr2PRrIUR4ydxsix1NStDkqPU+aeWXRdmuPRTkuZo7S9P/+6NGjw6zvEo4N+at/7FyL5ag3WtXCCZ+FUcBayt8H169f/8+8ptUff/zx6MqVK/9mYR5L8tOAZTnqFJw8IZo01WS93jI5urYnckeFNxJW/2TgTIYcs46V1/Xk2NeSo0R+c/dmAiGqwTh3hx94tpKSY79aOUrlstMAOQ6rmOeYNZYgTZxJg3RMpNq0Mnrz5s1/ffLkyWHSwEiJKu/fv3/oBzG/tfSAU7cczeY5WjjhXFYUEEaPv338+PGvaSNRf/7557/7Av0PnYqzzpUzTDK96VQNVsipTo7B73JG0otvtaZ7rH7kmC/Hq9euew/OPahkjuIkyrGKBSRMHnTzxGrz4XUcZdRPS+++++6vEkV+9913//fNN9/8LZTin2Xkv8Xof9jIPJR3gO3CK+3UshqOrK4gzazyb+kgllGt0jGsO2inTAarQo6mk/yzml+Qoz05Rqd55Mkx6dj8ATmjKFOnWTXepFqlHKeQY+n6wXS0apcix4T7LS2Da7akiBxTkghQxPj11197X3zxRSDHuhazrWJAjs7TYfxpMq9wRV9j4fHicpSkBtXkyTHtWPVaXH7RkaF50yjUlA1bfYtZ16CGATmdlKPOQ6dJ5Kgj27aXUeRYUZL5jEKdiSXJuilH1TcYnaAf/3u8H1Hn2Kh0ogsNBAN4YlMm0qZyyAhV1ccoVCnImqZydE6OZUahmiwEUuZhFjlOiBxlWkfZeYfIETk2KZWZRmEjBVFj0KRabBk5mlWzr03dI8iR44TKMbqiTp3RI3JEjqTSclzy2Z4kOVJGkWMtcpSV3G2tWlMkg5HaUfC4V83MA+HapZvIkTKKHC0nWck9Lse6okcq3PYUPO5VM/MAcqSMIscK5JgUNdYZPVLhIkcScqSMIsfGyTEpaqwzepSFcru2+4AlDqngkCNyRI7IccwDciStr6/Xsi9ckdS1TNjSgnPIQ0vzHpCQI3JEjhXLUVbEUbtP20jBUPZgDlvyPn3IEcBKhdYGOXbuwUpavZAjciz2ZOWM1rfs9/uld0WnEgRorxwBOSLHMDnBBOyetQnYZFyA1Aot2NuVawHIseFy7GtuSIscAZAjIMfOyzG+3mXZfkbkCIAcATl2JnLU3YUdOQIgR0COEyNHGYhjs0kVOQIgR0COVuSodkxX6IwUtSHHqnZCIOMCIEdAjq2NHGVeY9H965AjAHIE5Ng5OQYDckrOZ0SOAMYV2obPGtcCkGNFSdZSlYXIm9akihwBMiu0TVkIgGsByLGitLi46O3s7JRrUq0gakSOAMgRkGNr5BisnRpGiq4rS8VVEzUiRwDk2KDrPRCQI3LM7WOU0bD9CsWIHAGQYwOu83Q4+OnIZ87mZ3sNScixombVKhOFEwA5jun6uj7PYjuLuMgROSJHAOQ4qdd2NRRGdN74nu3zIEfkiBwB7FfgWz7LXAur13TeZzdlL8dt5IgckSNA8yvyHZ9FroX167qeIsdXyBE5IkcA5DjJ13bB5yAmR+sLLiBH5IgcAZBjm67tfCjHjYgcl5AjckSOAMhxUq+rjFLd81kJ/70UitK6PJBjw+U4Pz/v7e7uIkcA5Mh17fVeyUjg2GvTVZwLOVqQY8WZobEXBgCQY43XdDGMEqfrOF9Zqd28/WnQ5Pvg9gA5IkcAQI6VXM/psC6s7ZqWEdpgduh9fmfgXZqe9mZuPfZuz95AjsgRACi31q/nZhXTNaqMHGlWpZABAOW2ymu5Eg7Cces8L3JEjgBAuW3qdRyE/YzzdZ+7iMikGfX87JOgr/Hzu9eP+x6fzJ4P/oYcKWQAyJFya+M6bsuuG+M4d5lo78bd33hP753so/vxnX/UluPBwUEwfU8RPhyshAOSFm3vPoIcAaDz5TZj7VHQZ7esHCVaVHK8MbjlffLBLe33ihxd1836fsvIETkCIEez8zalq6xU2tvb86b9SGt/f38cfXxeWTnKaNXHt2aCaPHO8Lbx+589e5YpbuSIHAGQ44TJ8ejoyFtYWPA2NzfHNQDGmhyHH3/s3bh2xfj9GdFjY6JG5AgARcrtUd2jK7six+fPn3tLS0tjO78NOV69dt378NzDUvMbE6LHRkWNTZDjWAoZAJST1LjO2+b05s0bbzgcBpFTm+Vo2s+oGT02KmpsghxZwxQAOXZejtKcOjc3521tbY31exSVo0SL/3TzE+/Dj297n/qCt5Ei0WPjokbkCADIsYa0trbmra6ujv17lJGjNKU+/GjW2neR6DFsPWxc1IgcAQA5Vpy2t7eD5lSJHtsqxwq/z2pj8zlyBADkWE06PDz0BoNBY/atbZIc5WGhiZP/kSMAIMeK08rKire+vn7qNVlhJroE26TJUeZ5ykb3MiDn0aNHh8Ls7OyvFy5c+F//tX9GjsgRoI1ilO2VDiv43GHX5ChzGWVD92hzqtruSZJz72np/RDbJkd1TZIiaYmyv/322/+5fPnyXl37WiJHALAmMZmfXMHnvgjnPa92QY6y+o00p0qU1KRUpRwlQs5a9UemskjEmNf3+ssvv/zdv3Z/RI5UOADIcSRHNbQ/UZJtkKPjTnl9pxdI4OXLl8U+w+l7U67bOjnKoCP5fBmVmyRJ+bvuknkrKyv/Pe7BOsgRAJomx0RJ6sqx35/y3+scf86U65z+mxOZfO44nhM5Z9axri89J7bsmYgwKkY55sI77wRyfEt6956+tWTaww/PeTOD629/f/+80e/SJjkqopLc3d0NmlN1k8wHvXr16h+QIwC0RY5uuMXQixp3ktgPpWxUWStJOoH03LcivLdEaHhs9DU3EKPj9S9eDJpT0yKkaD+jLNwt/07aD1HO4QTnsBdBhqNDgxGi0W2jbCG/O+n+iSS///77YNK/bpL+RxmgM5FyrOoJFABaKd002W6qwTpF5CjCkigskF6/nyk8k2PjcuwFTaFOEB2lLSouApy59fjUmqSy/dOjs2cTF/BWTbS2UjjpXtiRyNY2aVtRyetfffWV0SII8nAxNTX1F+QIAMgxRYqmzapRifUlmgtlFm8CjQvP5NioHFWU947/fpm6kZaiWz2pJNM6kiJHFY0G0WNE1G1qVhUpSrQoUhbZDQ2WnZMHjOnp6d8hRwBAjilSLCtHJbigj9B1MuWoe2xUjvL3d873vDNnzmQuKh7dJFjSzCf3/ffcSZ3OUUXfYx1ylL0qlRSjaXl5WWttWWn+ffjw4V/8z1pAjgAw6XJczJvrWEaOI4n1j/sUs+Soc+xpOfZ9yfW8izn9g9K/OHdvJhCiGoxzd/hB5vcXOfZbIkdpUpYtuaS/MCnJ67L4ukzpyBKjjFS9cuXKv4w9TyJHAGiJQEvJMZCDM5KeCC1LjnnHRuV49tx579zZXmbzpyzc/eDcA6PNgdsmR521Y2XUqmz2LHMiZRCPEqm8/vr1a4k+/9oEMSJHAJgoOUaneeTJMetYJUdpJjxz5mwwhSNLjvEmVRM5tqVZ1STJHFAZxCMjUuU7Xbp06U+XL1/+fZPWWEWOADAxcpTkum+PNjU9Vl77hwtOMH3h4sV3M6ddqCkbpkvFHU/naMmAnCJJ3ddG5jfkCABdk6M0hapRk8lzF/un+gyLHBscf3b0ndRUjniSEaqqj1EwEaTtqRzIETkCAJFjpUmmGkjfmepnsz3tIogagyZVu8vImcox/jBge9Ue5IgcAaAjcpQ5ezJdoWmLihM5dkeOcz57FHoAaJMcJWLc2NhonRiRY3vkKPOadij0ANAWOapRlm1NyBE5AgBytJpkLp6MTs1aBQc5IkfkCAATI0cZeCOru8hE9TYn5IgcAaBjyCCYGrfJ6iRyDZEjcgQAsFVXHfhMd+U3IUfkCABQpp6aDjdbXuzS70KOyBEAoEw9JVtovera70KOyBEAoGgdtSJzsX1c5IgckSMAIMZebxD2M8538fchR+QIAFCkftr2edHV34ccmy3HZZ8tCiIANEyMaz5vuvwbkWOz5bgqnd0URgBokBhlzedD2RgBOSJH5AgAiLHXcyVilLqJ61HrdUeOyBEAGlxJv5C+Rq4FckSOAACj+mghnOw/4HogR+QIAFTOo+ZUmc+4zPVAjsgRAGBUF21QFyFH5AgAcLouetHFVXCQI3IEAChbH1EXIUfkCADQhgqaa48cAQCooLn2yNFP6z4vyRwAQAXNtUeOJxfkRZcX9gUAKmhAjsgRAKigATkiRwCgggbkiBwBgAoa7F/7feR4+oKshuxIxgQAgImkkZve/z9ne7rmO01DwQAAAABJRU5ErkJggg==", "image098.jpg": "data:image/jpeg;base64,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", "image099.jpg": "data:image/jpeg;base64,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"};
+const CHAPTERS = [{"key": "ch1", "short": "1 绪论", "name": "第1章 绪论", "file": "第1章 绪论.pptx", "pages": 77}, {"key": "ch2", "short": "2 模糊数学", "name": "第2章 模糊控制的数学基础", "file": "第2章 模糊控制的数学基础.ppt", "pages": 57}, {"key": "ch3", "short": "3 模糊控制设计", "name": "第3章 模糊控制的设计方法", "file": "第3章 模糊控制的设计方法.ppt", "pages": 70}, {"key": "ch4a", "short": "4-1 感知器", "name": "第4章补充 感知器", "file": "4-1第四章感知器 上课用.ppt", "pages": 45}, {"key": "ch4b", "short": "4-2 BP算法", "name": "第4章补充 BP 算法", "file": "4-2第四章bp算法 上课用.ppt", "pages": 18}, {"key": "ch4c", "short": "4-3 BP设计", "name": "第4章补充 BP 网络设计", "file": "4-3第四章bp设计.ppt", "pages": 41}, {"key": "ch4", "short": "4 神经网络理论", "name": "第4章 神经网络基本理论", "file": "第4章 神经网络基本理论.ppt", "pages": 60}, {"key": "ch5", "short": "5 神经网络应用", "name": "第5章 神经网络在控制中的应用", "file": "第5章 神经网络在控制中的应用.ppt", "pages": 48}, {"key": "ch6", "short": "6 模糊神经网络", "name": "第6章 模糊神经网络", "file": "第6章 模糊神经网络.ppt", "pages": 7}, {"key": "ch7", "short": "7 专家系统", "name": "第7章 专家系统技术", "file": "第7章 专家系统技术-1.ppt", "pages": 61}, {"key": "ch8", "short": "8 遗传算法", "name": "第8章 遗传算法及应用", "file": "第8章 遗传算法及应用-1.ppt", "pages": 104}];
+
+/* ================= 工具 ================= */
+const LS = 'ic_quiz_v2';
+let store = {};
+try { store = JSON.parse(localStorage.getItem(LS) || '{}'); } catch(e){ store = {}; }
+const save = () => { try{ localStorage.setItem(LS, JSON.stringify(store)); }catch(e){} };
+
+// 全角→半角、去空白与标点，用于比对
+function norm(s){
+  if(s == null) return '';
+  s = String(s);
+  let r = '';
+  for(const ch of s){
+    const c = ch.charCodeAt(0);
+    if(c === 12288 || c === 32 || c === 9 || c === 10 || c === 13) continue;
+    if(c >= 65281 && c <= 65374) { const t = String.fromCharCode(c-65248); if(/[，。、；：？！（）【】《》“”‘’…—－]/.test(t)) continue; r += t; continue; }
+    if(/[，。、；：？！（）【】《》“”‘’…—－·,.;:?!"'()\[\]{}<>\/~`]/.test(ch)) continue;
+    r += ch.toLowerCase();
+  }
+  return r;
+}
+// 相似度：最长公共子序列 / 答案长度
+function sim(a,b){
+  a = norm(a); b = norm(b);
+  if(!a || !b) return 0;
+  if(a === b) return 1;
+  const n=a.length, m=b.length;
+  if(n*m > 40000) return a.includes(b)||b.includes(a) ? .9 : 0;
+  const dp = new Array(m+1).fill(0);
+  let prev;
+  for(let i=1;i<=n;i++){
+    prev = 0;
+    for(let j=1;j<=m;j++){
+      const tmp = dp[j];
+      dp[j] = a[i-1]===b[j-1] ? prev+1 : Math.max(dp[j], dp[j-1]);
+      prev = tmp;
+    }
+  }
+  return dp[m] / Math.max(n,m);
+}
+// 去掉“系统/控制/技术…”等通用词尾，得到可单独命中的核心词
+function core(s){
+  let t = s;
+  for(const suf of ['控制系统','系统','控制','技术','方法','算法','理论','结构','模型']){
+    if(t.endsWith(suf) && t.length - suf.length >= 2) t = t.slice(0, -suf.length);
+  }
+  return t || s;
+}
+// 枚举型答案：逐项看命中比例，返回 0~1
+function enumHit(u, a){
+  const parts = String(a).split(/[、，,；;／\/和及与]/).map(norm).filter(x => x.length >= 2);
+  if(parts.length < 2) return 0;
+  let hit = 0;
+  for(const p of parts){
+    if(u.includes(p) || u.includes(core(p))) hit++;
+  }
+  return hit / parts.length;
+}
+// 判分：返回 2=对 1=部分 0=错
+function gradeBlank(input, accepted){
+  const u = norm(input);
+  if(!u) return 0;
+  let best = 0, bestEnum = 0;
+  for(const a of accepted){
+    const na = norm(a);
+    if(!na) continue;
+    if(u === na) return 2;
+    if(na.length >= 8 && u.includes(na)) return 2;                 // 用户答得比标准答案更全
+    if(u.length >= 8 && na.includes(u) && u.length / na.length >= .75) return 2;
+    if(na.length >= 2 && u.includes(na) && u.length - na.length <= 2) return 2; // 多写两三个字
+    const eh = enumHit(u, a);
+    if(eh >= .85) return 2;
+    bestEnum = Math.max(bestEnum, eh);
+    best = Math.max(best, sim(input, a));
+  }
+  if(best >= .82) return 2;
+  if(bestEnum >= .4 || best >= .55) return 1;
+  if(bestEnum >= .3) return 1;
+  // 字符覆盖率兜底（答案很长时，允许少量字误写）
+  const na = norm(accepted[0]);
+  if(na.length >= 12){
+    let hit = 0; const set = new Set(u);
+    for(const ch of na) if(set.has(ch)) hit++;
+    if(hit / na.length >= .8) return 1;
+  }
+  return 0;
+}
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+/* ================= 顺序 & 过滤 ================= */
+const SECNAME = {fill:'填空', short:'简答', calc:'计算', essay:'论述'};
+const PTS = {fill:1, short:6, calc:10, essay:21};   // 参考分值
+let order = {fill:[], short:[], calc:[], essay:[]};
+let curTab = 'all';
+let examSet = null;     // 模拟组卷时的题目集合
+let curCh = null;       // 当前选中的章节 key（curTab==='ch' 时生效）
+
+function allIds(){
+  const ids = [];
+  for(const s of ['fill','short','calc','essay']) for(const it of DATA[s]) ids.push(it.id);
+  return ids;
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function resetOrder(rand){
+  for(const s of ['fill','short','calc','essay']){
+    order[s] = DATA[s].map(x=>x.id);
+    if(rand) shuffle(order[s]);
+  }
+}
+const byId = {}; for(const s of ['fill','short','calc','essay']) for(const it of DATA[s]) byId[it.id] = it;
+
+/* ================= 渲染 ================= */
+function renderTabs(){
+  const tabs = [
+    ['all','全部题目', allIds().length],
+    ['ch','按章节刷题', allIds().length],
+    ['fill','填空题', DATA.fill.length],
+    ['short','简答题', DATA.short.length],
+    ['calc','计算题', DATA.calc.length],
+    ['essay','论述题', DATA.essay.length],
+    ['wrong','错题本', countWrong()],
+    ['undone','未完成', countUndone()],
+  ];
+  $('#tabs').innerHTML = tabs.map(([k,n,c])=>{
+    const on = (curTab===k) ? ' on' : '';
+    return `<button class="tab${on}" data-tab="${k}">${n}<span class="n">${c}</span></button>`;
+  }).join('');
+  $$('#tabs .tab').forEach(b=> b.onclick = ()=>{
+    const k = b.dataset.tab;
+    if(k === 'ch' && curTab !== 'ch'){ pickFirstCh(); }
+    curTab = k; examSet=null; renderTabs(); render();
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+  renderChbar();
+}
+
+/* ---------- 章节筛选条 ---------- */
+function chIds(chKey){ return allIds().filter(id => (byId[id].ch || []).includes(chKey)); }
+function chStat(chKey){
+  const ids = chIds(chKey); let done = 0;
+  for(const id of ids){ const st = store[id] || {}; if(st.done || st.res) done++; }
+  return {n: ids.length, done};
+}
+function pickFirstCh(){
+  const withQ = CHAPTERS.filter(c => chIds(c.key).length);
+  curCh = (withQ[0] || CHAPTERS[0]).key;
+}
+function renderChbar(){
+  const bar = $('#chbar');
+  if(!bar) return;
+  if(curTab !== 'ch'){ bar.innerHTML = ''; bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  const total = allIds().length;
+  const doneAll = allIds().filter(id=>{ const st = store[id]||{}; return st.done || st.res; }).length;
+  let html = `<span class="lblch">按 PPT 章节：</span>
+    <button class="chip${curCh==='__all'?' on':''}" data-ch="__all">
+      <span class="d ${doneAll===total?'all':(doneAll?'some':'')}"></span>全部章节<span class="c">${doneAll}/${total}</span>
+    </button>`;
+  for(const c of CHAPTERS){
+    const s = chStat(c.key);
+    const dot = s.n === 0 ? '' : (s.done === s.n ? 'all' : (s.done ? 'some' : ''));
+    html += `<button class="chip${curCh===c.key?' on':''}" data-ch="${c.key}">
+      <span class="d ${dot}"></span>${c.short}<span class="c">${s.done}/${s.n}</span>
+    </button>`;
+  }
+  bar.innerHTML = html;
+  $$('#chbar .chip').forEach(b=> b.onclick = ()=>{
+    curCh = b.dataset.ch; examSet = null; renderChbar(); render();
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+}
+
+function chInfoHtml(){
+  if(curCh === '__all'){
+    const total = allIds().length;
+    const rows = CHAPTERS.map(c=>{
+      const s = chStat(c.key);
+      return `${c.short} <b>${s.n}</b> 题`;
+    });
+    return `<div class="chinfo">
+      <div class="t1">全部章节 · 共 ${total} 题</div>
+      <div class="t2">${rows.join(' ｜ ')}</div>
+      <div class="t3">点上方章节胶囊可只看某一份 PPT 的题；题目的课件出处见每题解析下方。</div>
+    </div>`;
+  }
+  const c = CHAPTERS.find(x=>x.key===curCh);
+  if(!c) return '';
+  const ids = chIds(c.key);
+  const cnt = {fill:0, short:0, calc:0, essay:0};
+  let blanks = 0;
+  for(const id of ids){ const it = byId[id]; cnt[it.section]++; if(it.section==='fill') blanks += it.nblank; }
+  const parts = [];
+  if(cnt.fill) parts.push(`填空 <b>${cnt.fill}</b> 题 / ${blanks} 空`);
+  if(cnt.short) parts.push(`简答 <b>${cnt.short}</b> 题`);
+  if(cnt.calc) parts.push(`计算 <b>${cnt.calc}</b> 题`);
+  if(cnt.essay) parts.push(`论述 <b>${cnt.essay}</b> 题`);
+  return `<div class="chinfo">
+    <div class="t1">${c.short} · 本章题量 ${ids.length}
+      <span class="pg">PPT 共 ${c.pages} 页</span></div>
+    <div class="t2">${parts.join(' ｜ ') || '本章暂无题目'}</div>
+    <div class="file">📄 ${c.file}</div>
+  </div>`;
+}
+
+function visibleIds(){
+  if(examSet) return examSet;
+  if(curTab === 'ch'){
+    if(curCh === '__all') return allIds();
+    const set = new Set(chIds(curCh));
+    return [...order.fill, ...order.short, ...order.calc, ...order.essay].filter(id => set.has(id));
+  }
+  if(curTab === 'all') return [...order.fill, ...order.short, ...order.calc, ...order.essay];
+  if(curTab === 'wrong') return allIds().filter(id => store[id] && store[id].res === 'bad');
+  if(curTab === 'undone') return allIds().filter(id => !store[id] || !store[id].done);
+  return order[curTab] || [];
+}
+
+function countWrong(){ return allIds().filter(id => store[id] && store[id].res === 'bad').length; }
+function countUndone(){ return allIds().filter(id => !store[id] || !store[id].done).length; }
+
+function srcHtml(it){
+  const list = it.src || [];
+  if(!list.length) return '';
+  const rows = list.map(s=>{
+    const pg = s.c + ' ' + s.p;
+    return `<div class="row"><span class="ppt">${pg}</span>
+      <span class="txt"><span class="sec">${s.s}</span> · 知识点：<span class="kp">${s.k}</span></span></div>`;
+  }).join('');
+  return `<div><span class="lbl s">课件出处</span></div><div class="src">${rows}</div>`;
+}
+
+function qCard(it){
+  const st = store[it.id] || {};
+  const isF = it.section === 'fill';
+  const cls = st.res === 'ok' ? ' ok' : st.res === 'part' ? ' part' : st.res === 'bad' ? ' bad' : '';
+  const flag = st.res === 'ok' ? '<span class="flag ok">✓ 正确</span>'
+             : st.res === 'part' ? '<span class="flag part">◐ 部分正确</span>'
+             : st.res === 'bad' ? '<span class="flag bad">✗ 错误</span>' : '';
+  const pt = PTS[it.section];
+  let body = '';
+
+  if(isF){
+    const segs = it.stem.split('%%');
+    let html = '';
+    for(let i=0;i<segs.length;i++){
+      html += segs[i];
+      if(i < segs.length-1){
+        const wide = (it.blanks[i] && it.blanks[i][0] && it.blanks[i][0].length > 14) ? ' wide' : '';
+        html += `<input class="blank${wide}" data-q="${it.id}" data-b="${i}" autocomplete="off"
+                 placeholder="${i+1}" value="${esc((st.ans&&st.ans[i])||'')}">`;
+      }
+    }
+    body = `<div class="stem">${html}</div>
+      <div class="qfoot"><button class="btn sm pri" data-act="check" data-q="${it.id}">批改本题</button>
+      <button class="btn sm ghost" data-act="toggle" data-q="${it.id}">看答案/解析</button></div>`;
+  } else {
+    body = `<div class="stem">${it.stem}</div>
+      ${it.img && IMGS[it.img] ? `<img class="qimg" src="${IMGS[it.img]}" alt="配图">` : ''}
+      <textarea class="ta" data-q="${it.id}" placeholder="在这里写你的答案要点…（作答后点“看答案/解析”对照评分）">${esc(st.text||'')}</textarea>
+      <div class="self"><span>自评：</span>
+        <button data-act="self" data-q="${it.id}" data-v="ok">掌握</button>
+        <button data-act="self" data-q="${it.id}" data-v="part">一般</button>
+        <button data-act="self" data-q="${it.id}" data-v="bad">未掌握</button>
+      </div>
+      <div class="qfoot"><button class="btn sm pri" data-act="toggle" data-q="${it.id}">看答案/解析</button></div>`;
+  }
+
+  const ansHtml = `<div class="ansbox" id="ans-${it.id}">
+      <div><span class="lbl a">正确答案</span></div>
+      <div class="ans">${it.ans || ('参考答案：' + (it.blanks||[]).map((b,i)=>`(${i+1}) ${esc(b[0])}`).join('；'))}
+        ${it.img && isF ? '' : ''}</div>
+      ${it.ana ? `<div><span class="lbl n">解析</span></div><div class="ana">${it.ana}</div>` : ''}
+      ${srcHtml(it)}
+    </div>`;
+
+  const imgHtml = (!isF && it.img && IMGS[it.img] && !it.stem.includes('见上图'))
+      ? '' : '';
+
+  return `<div class="q${cls}" id="q-${it.id}" data-q="${it.id}">
+    <div class="qh">
+      <span class="no${it.section==='essay'?' e':''}">${it.no}</span>
+      <span class="tag">${SECNAME[it.section]}</span>
+      ${it.section==='essay'?'<span class="tag pt">论述四选一 · 21分</span>':''}
+      ${isF?`<span class="tag pt">${it.nblank} 空</span>`:''}
+      ${isF?'':`<span class="tag pt">约 ${pt} 分</span>`}
+      <span class="spacer"></span>${flag}
+    </div>
+    ${body}
+    ${ansHtml}
+  </div>`;
+}
+
+function render(){
+  const ids = visibleIds();
+  if(curTab === 'ch' && !examSet){
+    $('#list').innerHTML = chInfoHtml() +
+      (ids.length ? '' : `<div class="empty">本章还没有题目…</div>`);
+    if(!ids.length){ updateStat(); return; }
+    // 章节模式下同样分题型显示
+    let h = '';
+    let lastSec = null;
+    for(const id of ids){
+      const it = byId[id];
+      if(!it) continue;
+      if(it.section !== lastSec){
+        lastSec = it.section;
+        h += `<div style="margin:26px 0 2px;font-size:13px;color:#6b7280;letter-spacing:1px;
+          border-left:3px solid #2563eb;padding-left:9px;font-weight:600">${SECNAME[it.section]}题</div>`;
+      }
+      h += qCard(it);
+    }
+    $('#list').innerHTML = chInfoHtml() + h;
+    bindEvents();
+    for(const id of ids){ if(store[id] && store[id].open) $('#ans-'+id)?.classList.add('show'); }
+    updateStat();
+    return;
+  }
+  if(!ids.length){
+    $('#list').innerHTML = `<div class="empty">这里还没有题目 —— 切换上方标签，或点“清空记录”重新开始。</div>`;
+    updateStat(); return;
+  }
+  let html = '';
+  let lastSec = null;
+  for(const id of ids){
+    const it = byId[id];
+    if(!it) continue;
+    if(curTab === 'all' && !examSet && it.section !== lastSec){
+      lastSec = it.section;
+      html += `<div style="margin:26px 0 2px;font-size:13px;color:#6b7280;letter-spacing:1px;
+        border-left:3px solid #2563eb;padding-left:9px;font-weight:600">
+        ${SECNAME[it.section]}题${it.section==='essay'?'（每题四选一，考试只考 1 题）':''}</div>`;
+    }
+    html += qCard(it);
+  }
+  $('#list').innerHTML = html;
+  bindEvents();
+  // 恢复已显示答案的卡片
+  for(const id of ids){ if(store[id] && store[id].open) $('#ans-'+id)?.classList.add('show'); }
+  updateStat();
+}
+
+function bindEvents(){
+  $$('input.blank').forEach(inp=>{
+    inp.oninput = ()=>{
+      const id = inp.dataset.q, b = +inp.dataset.b;
+      store[id] = store[id] || {}; store[id].ans = store[id].ans || [];
+      store[id].ans[b] = inp.value; store[id].done = true; save();
+      updateStat();
+    };
+    inp.onkeydown = e => { if(e.key==='Enter'){ e.preventDefault(); checkFill(inp.dataset.q); } };
+  });
+  $$('textarea.ta').forEach(t=>{
+    t.oninput = ()=>{ const id=t.dataset.q; store[id]=store[id]||{}; store[id].text=t.value; store[id].done=true; save(); updateStat(); };
+  });
+  $$('[data-act]').forEach(b=>{
+    const act = b.dataset.act, id = b.dataset.q;
+    if(act==='check') b.onclick = ()=> checkFill(id);
+    if(act==='toggle') b.onclick = ()=> toggleAns(id);
+    if(act==='self') b.onclick = ()=>{
+      store[id] = store[id]||{}; store[id].res = b.dataset.v; store[id].done = true;
+      store[id].open = true; save();
+      const card = $('#q-'+id);
+      card.className = 'q ' + b.dataset.v;
+      showFlag(id, b.dataset.v);
+      $('#ans-'+id)?.classList.add('show');
+      markSelf(id);
+      renderTabs(); updateStat();
+    };
+  });
+  $$('input.blank').forEach(i=>{
+    const id = i.dataset.q, b = +i.dataset.b;
+    const r = store[id] && store[id].res;
+    if(r) applyBlankClass(i, r);
+  });
+  $$('.self button').forEach(b=>{
+    const id=b.dataset.q;
+    if(store[id] && store[id].res === b.dataset.v) b.classList.add('on', b.dataset.v);
+  });
+}
+
+function markSelf(id){
+  const r = store[id] && store[id].res;
+  $$(`.self button[data-q="${id}"]`).forEach(b=>{
+    b.classList.toggle('on', b.dataset.v === r);
+    b.classList.toggle('ok',  b.dataset.v === r && r==='ok');
+    b.classList.toggle('part',b.dataset.v === r && r==='part');
+    b.classList.toggle('bad', b.dataset.v === r && r==='bad');
+  });
+}
+
+function applyBlankClass(inp, r){
+  inp.classList.remove('ok','bad','part');
+  const res = r === 'ok' ? 'ok' : r === 'part' ? 'part' : 'bad';
+  // 填空逐空判定，需要更细：由 checkFill 单独设置
+  if(inp.dataset.per) inp.classList.add(inp.dataset.per);
+}
+
+function showFlag(id, res){
+  const card = $('#q-'+id); if(!card) return;
+  const qh = card.querySelector('.qh');
+  qh.querySelectorAll('.flag').forEach(f=>f.remove());
+  const sp = qh.querySelector('.spacer');
+  const t = res==='ok' ? '<span class="flag ok">✓ 正确</span>'
+          : res==='part' ? '<span class="flag part">◐ 部分正确</span>'
+          : '<span class="flag bad">✗ 错误</span>';
+  sp.insertAdjacentHTML('afterend', t);
+}
+
+function checkFill(id){
+  const it = byId[id];
+  const card = $('#q-'+id);
+  const inputs = [...card.querySelectorAll('input.blank')];
+  let correct = 0, part = 0;
+  inputs.forEach(inp=>{
+    const b = +inp.dataset.b;
+    const acc = (it.blanks[b] || ['']);
+    const g = gradeBlank(inp.value, acc);
+    inp.classList.remove('ok','bad','part');
+    const want = g===2 ? 'ok' : g===1 ? 'part' : 'bad';
+    inp.dataset.per = want;
+    inp.classList.add(want);
+    if(g===2) correct++; else if(g===1) part++;
+  });
+  const n = inputs.length;
+  const res = correct === n ? 'ok' : (correct + part*0.5) > 0 ? 'part' : 'bad';
+  store[id] = store[id] || {};
+  store[id].res = res; store[id].done = true; store[id].open = true;
+  store[id].correct = correct; store[id].total = n;
+  save();
+  card.className = 'q ' + (res==='ok'?'ok':res==='part'?'part':'bad');
+  showFlag(id, res);
+  $('#ans-'+id)?.classList.add('show');
+  renderTabs(); updateStat();
+}
+
+function toggleAns(id){
+  const box = $('#ans-'+id); if(!box) return;
+  const on = box.classList.toggle('show');
+  store[id] = store[id] || {}; store[id].open = on; save();
+}
+
+function updateStat(){
+  const ids = (curTab === 'ch' && !examSet) ? visibleIds() : allIds();
+  let ok=0, part=0, bad=0, done=0, got=0, full=0;
+  for(const id of ids){
+    const it = byId[id], st = store[id] || {};
+    if(st.done || st.res) done++;
+    if(st.res==='ok'){ ok++; }
+    else if(st.res==='part'){ part++; }
+    else if(st.res==='bad'){ bad++; }
+  }
+  // 折算分：填空按空计
+  let fillGot=0, fillFull=0;
+  for(const it of DATA.fill){
+    if(!ids.includes(it.id)) continue;
+    const st = store[it.id] || {};
+    const n = it.nblank; fillFull += n;
+    if(st.total){ fillGot += (st.correct||0); }
+    else if(st.res==='ok'){ fillGot += n; }
+    else if(st.res==='part'){ fillGot += n*0.5; }
+  }
+  const total = ids.length;
+  const scope = (curTab === 'ch' && !examSet)
+    ? `<b style="color:#1d4ed8">${(CHAPTERS.find(x=>x.key===curCh)||{}).short || '全部章节'}</b> · `
+    : '';
+  $('#stat').innerHTML = `${scope}已完成 <b>${done}</b>/${total} &nbsp;·&nbsp;
+    <span style="color:#15803d">✓<b>${ok}</b></span>
+    <span style="color:#b45309">◐<b>${part}</b></span>
+    <span style="color:#dc2626">✗<b>${bad}</b></span>
+    &nbsp;·&nbsp; 填空 <b>${fillGot}</b>/${fillFull} 空`;
+  $('#bar').style.width = (total? done/total*100 : 0) + '%';
+}
+
+/* ================= 顶部按钮 ================= */
+$('#btnCheckAll').onclick = ()=>{
+  const ids = visibleIds().filter(id=> byId[id].section==='fill');
+  if(!ids.length){ alert('当前视图没有填空题（简答/计算/论述请用“自评”）。'); return; }
+  ids.forEach(checkFill);
+  toast(`已批改 ${ids.length} 道填空题`);
+};
+$('#btnShowAll').onclick = ()=>{
+  const ids = visibleIds();
+  const anyHidden = ids.some(id => !($('#ans-'+id)?.classList.contains('show')));
+  ids.forEach(id=>{
+    const box = $('#ans-'+id); if(!box) return;
+    box.classList.toggle('show', anyHidden);
+    store[id] = store[id]||{}; store[id].open = anyHidden;
+  });
+  save();
+};
+$('#btnRandom').onclick = ()=>{ resetOrder(true); curTab='all'; examSet=null; renderTabs(); render(); toast('已随机打乱顺序'); };
+$('#btnReset').onclick = ()=>{
+  if(!confirm('确定清空所有作答记录、错题与自评吗？此操作不可撤销。')) return;
+  store = {}; save(); resetOrder(false); examSet=null; curTab='all'; renderTabs(); render(); toast('记录已清空');
+};
+$('#btnExam').onclick = ()=>{
+  // 按考试结构组卷：填空累计≈25空 + 简答4 + 计算3 + 论述1
+  const fillPool = shuffle([...DATA.fill]);
+  const picked = []; let blanks = 0;
+  for(const it of fillPool){
+    if(blanks >= 25) break;
+    picked.push(it.id); blanks += it.nblank;
+  }
+  const short = shuffle([...DATA.short]).slice(0,4).map(x=>x.id);
+  const calc  = shuffle([...DATA.calc]).slice(0,3).map(x=>x.id);
+  const essay = shuffle([...DATA.essay]).slice(0,1).map(x=>x.id);
+  examSet = [...picked, ...short, ...calc, ...essay];
+  curTab = 'exam';
+  renderTabs(); render();
+  window.scrollTo({top:0,behavior:'smooth'});
+  openResult('exam', blanks, picked.length, short.length, calc.length, essay.length);
+};
+$('#fabTop').onclick = ()=> window.scrollTo({top:0,behavior:'smooth'});
+$('#fabResult').onclick = ()=> openResult('all');
+$('#modal').onclick = e => { if(e.target.id==='modal') $('#modal').classList.remove('show'); };
+
+function toast(msg){
+  const d = document.createElement('div');
+  d.textContent = msg;
+  d.style.cssText = 'position:fixed;left:50%;bottom:78px;transform:translateX(-50%);background:#1f2937;'+
+    'border:1px solid #374151;color:#f9fafb;padding:9px 18px;border-radius:10px;font-size:13.5px;z-index:999;'+
+    'box-shadow:0 10px 30px rgba(15,23,42,.25);transition:.3s;opacity:0';
+  document.body.appendChild(d);
+  requestAnimationFrame(()=>{ d.style.opacity='1'; d.style.bottom='88px'; });
+  setTimeout(()=>{ d.style.opacity='0'; d.style.bottom='78px'; setTimeout(()=>d.remove(),320); }, 1800);
+}
+
+function openResult(kind, blanks, nf, ns, nc, ne){
+  let html = '';
+  if(kind === 'exam'){
+    html = `<h3>已按考试结构生成试卷</h3>
+      <table>
+        <tr><td>填空题</td><td>${nf} 题 / ${blanks} 空（约 25 空）</td></tr>
+        <tr><td>简答题</td><td>${ns} 题（各 6 分，共 24 分）</td></tr>
+        <tr><td>计算题</td><td>${nc} 题（各 10 分，共 30 分）</td></tr>
+        <tr><td>论述题</td><td>${ne} 题（21 分，四选一）</td></tr>
+      </table>
+      <p style="color:#6b7280;font-size:13px;margin:14px 0 0">
+        作答时先不点“看答案”，写完整张卷再逐题对照。点上方标签可退出组卷。</p>
+      <div style="margin-top:16px;text-align:right"><button class="btn pri" onclick="document.getElementById('modal').classList.remove('show')">开始答题</button></div>`;
+  } else {
+    let ok=0, part=0, bad=0, done=0;
+    const secs = {fill:[0,0], short:[0,0], calc:[0,0], essay:[0,0]};
+    for(const id of allIds()){
+      const st = store[id]||{}, it = byId[id];
+      if(st.done||st.res) done++;
+      if(st.res==='ok') ok++; else if(st.res==='part') part++; else if(st.res==='bad') bad++;
+      if(it.section==='fill'){ secs.fill[1]++; if(st.res==='ok') secs.fill[0]++; }
+      else if(st.res){ secs[it.section][1]++; if(st.res==='ok') secs[it.section][0]++; }
+    }
+    const rate = done ? Math.round((ok + part*0.5)/done*100) : 0;
+    html = `<h3>学习统计</h3>
+      <div style="text-align:center;margin:6px 0 18px">
+        <div class="big">${rate}%</div>
+        <div style="color:#6b7280;font-size:13px">按已作答题目的掌握率（部分正确记半分）</div>
+      </div>
+      <table>
+        <tr><td>已完成</td><td>${done} / ${allIds().length}</td></tr>
+        <tr><td style="color:#15803d">掌握</td><td>${ok}</td></tr>
+        <tr><td style="color:#b45309">一般</td><td>${part}</td></tr>
+        <tr><td style="color:#dc2626">未掌握</td><td>${bad}</td></tr>
+        <tr><td>填空题掌握</td><td>${secs.fill[0]} / ${DATA.fill.length}</td></tr>
+        <tr><td>简答题掌握</td><td>${secs.short[1]} 题已评</td></tr>
+        <tr><td>计算题掌握</td><td>${secs.calc[1]} 题已评</td></tr>
+        <tr><td>论述题掌握</td><td>${secs.essay[1]} 题已评</td></tr>
+      </table>
+      <div style="margin-top:16px;text-align:right"><button class="btn" onclick="document.getElementById('modal').classList.remove('show')">关闭</button></div>`;
+  }
+  $('#modalBox').innerHTML = html;
+  $('#modal').classList.add('show');
+}
+
+/* ================= 启动 ================= */
+resetOrder(false);
+renderTabs();
+render();
+</script>
+</body>
+</html>
