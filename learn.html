@@ -516,18 +516,29 @@
   var cfg = { repo: "", path: "wordbook.json", token: "" };
   try {
     var c = JSON.parse(localStorage.getItem(KEY_CFG) || "null");
-    if (c) cfg = { repo: c.repo || "", path: c.path || "wordbook.json", token: c.token || "" };
+    if (c) cfg = { repo: (c.repo || "").trim(), path: (c.path || "wordbook.json").trim(), token: (c.token || "") };
   } catch (e) {}
+  // HTTP headers only accept ISO-8859-1; strip anything else (full-width spaces, smart quotes, …)
+  function cleanAscii(str) { return String(str || "").replace(/[^\x21-\x7E]/g, "").trim(); }
   function saveCfg() { try { localStorage.setItem(KEY_CFG, JSON.stringify(cfg)); } catch (e) {} }
   function hasSync() { return !!(cfg.repo && cfg.token); }
 
   var ghSha = null;
   function ghHeaders() {
-    return { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+    return { Authorization: "Bearer " + cleanAscii(cfg.token), Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
   }
   function b64encodeUtf8(s) { return btoa(unescape(encodeURIComponent(s))); }
   function b64decodeUtf8(b) { return decodeURIComponent(escape(atob(String(b).replace(/\s/g, "")))); }
   function ghUrl() { return "https://api.github.com/repos/" + cfg.repo + "/contents/" + encodeURI(cfg.path); }
+  function friendlyErr(e) {
+    var m = (e && e.message) || String(e);
+    if (/ISO-8859-1/i.test(m)) return "Token 里有全角字符或中文标点，请重新粘贴（只保留 github_pat_ 开头的英文串）";
+    if (/Failed to fetch|NetworkError|load failed/i.test(m)) return "网络连不上 GitHub（可能被墙或断网），稍后会自动重试";
+    if (/401/.test(m)) return "Token 无效或已过期，请重新生成";
+    if (/403/.test(m)) return "Token 权限不足（需要该仓库的 Contents: Read and write）";
+    if (/404/.test(m)) return "仓库或分支不存在，检查 owner/repo 和 main 分支";
+    return m;
+  }
   function syncStatus(msg, cls) {
     var el = $("syncStatus"); if (!el) return;
     el.textContent = msg || ""; el.className = "status" + (cls ? " " + cls : "");
@@ -551,7 +562,7 @@
         syncStatus("已拉取云端进度", "ok");
         return true;
       })
-      .catch(function (e) { syncStatus("拉取失败：" + e.message, "err"); return false; });
+      .catch(function (e) { syncStatus("拉取失败：" + friendlyErr(e), "err"); return false; });
   }
 
   var pushTimer = null, pushing = false, pushAgain = false;
@@ -579,7 +590,7 @@
         throw new Error("写入失败 HTTP " + r.status);
       })
       .then(function (res) { if (res && res.content) ghSha = res.content.sha; syncStatus("已保存到云端", "ok"); })
-      .catch(function (e) { syncStatus("保存失败：" + e.message, "err"); })
+      .catch(function (e) { syncStatus("保存失败：" + friendlyErr(e), "err"); })
       .then(function () { pushing = false; if (pushAgain) { pushAgain = false; push(); } });
   }
 
@@ -596,7 +607,14 @@
   $("btnSyncNow").addEventListener("click", function () {
     cfg.repo = $("syncRepo").value.trim().replace(/^https?:\/\/github\.com\//i, "").replace(/\.git$/, "").replace(/\/+$/, "");
     cfg.path = ($("syncPath").value.trim() || "wordbook.json").replace(/^\/+/, "");
-    cfg.token = $("syncToken").value.trim();
+    var rawTok = $("syncToken").value;
+    cfg.token = cleanAscii(rawTok);
+    if (cfg.token !== rawTok.trim()) {
+      $("syncToken").value = cfg.token;
+      if (!cfg.token) { syncStatus("Token 里全是非法字符，请重新粘贴（只能是英文数字下划线）", "err"); return; }
+    }
+    if (!/^[A-Za-z0-9_]+$/.test(cfg.token)) { syncStatus("Token 格式不对：只能是英文、数字、下划线", "err"); return; }
+    if (!/^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test(cfg.repo)) { syncStatus("仓库格式应为 owner/repo（只能英文数字）", "err"); return; }
     saveCfg();
     if (!hasSync()) { syncStatus("仓库和 Token 都要填", "err"); return; }
     pull().then(function () { return push(); }).then(function () { toast("同步完成"); });
@@ -613,4 +631,7 @@
 </script>
 </body>
 </html>
+
+
+
 
