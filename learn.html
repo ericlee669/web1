@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
@@ -11,10 +11,10 @@
     --sky: #5fb6f0;
     --sky-2: #8fd6ff;
     --ink: #eef4ff;
-    --muted: rgba(228, 238, 255, 0.60);
-    --line: rgba(255, 255, 255, 0.13);
-    --panel: rgba(14, 21, 38, 0.72);
-    --chip: rgba(255, 255, 255, 0.07);
+    --muted: rgba(228, 238, 255, 0.58);
+    --line: rgba(255, 255, 255, 0.12);
+    --panel: rgba(14, 21, 38, 0.66);
+    --chip: rgba(255, 255, 255, 0.06);
     --good: #46d59b;
     --warn: #ff9d5c;
     --danger: #ff7d95;
@@ -24,133 +24,132 @@
   html, body { margin: 0; min-height: 100%; }
   body {
     background:
-      radial-gradient(60% 45% at 15% 0%, rgba(70, 140, 220, 0.28), transparent 70%),
-      radial-gradient(55% 40% at 95% 10%, rgba(160, 90, 200, 0.22), transparent 70%),
+      radial-gradient(60% 45% at 15% 0%, rgba(70, 140, 220, 0.26), transparent 70%),
+      radial-gradient(55% 40% at 95% 10%, rgba(160, 90, 200, 0.20), transparent 70%),
       #080d18;
     color: var(--ink);
     font-family: "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     min-height: 100dvh;
-    padding: 0 0 40px;
+    padding-bottom: 60px;
   }
 
-  .wrap { width: min(760px, 100%); margin: 0 auto; padding: 18px 16px 0; }
+  .wrap { width: min(880px, 100%); margin: 0 auto; padding: 16px 14px 0; }
 
-  header.top {
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    padding: 6px 0 14px;
-  }
+  header.top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 4px 0 12px; }
   .back {
-    display: inline-flex; align-items: center; gap: 6px;
-    color: var(--muted); text-decoration: none; font-size: 12.5px;
-    padding: 6px 10px; border-radius: 9px; border: 1px solid var(--line);
-    background: var(--chip);
-  }
-  .back:hover { color: var(--ink); border-color: var(--sky); }
-  h1 { margin: 0; font-size: 19px; letter-spacing: -0.01em; }
-  .stat { margin-left: auto; display: flex; gap: 14px; font-size: 12px; color: var(--muted); }
-  .stat b { color: var(--ink); font-weight: 650; }
-
-  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; padding: 4px 0 14px; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 13px; border-radius: 10px; cursor: pointer;
-    border: 1px solid var(--line); background: var(--chip); color: var(--ink);
-    font-family: inherit; font-size: 12.5px;
-    transition: border-color .15s ease, background .15s ease, transform .15s ease;
-  }
-  .btn:hover { border-color: var(--sky); background: rgba(95, 182, 240, 0.14); }
-  .btn.on { border-color: var(--sky); background: rgba(95, 182, 240, 0.2); }
-  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
-
-  .tabs { display: flex; gap: 6px; padding: 3px; border-radius: 12px; background: var(--chip); border: 1px solid var(--line); width: fit-content; margin-bottom: 16px; }
-  .tabs button {
-    border: 0; background: none; color: var(--muted); font-family: inherit;
-    font-size: 12.5px; padding: 7px 15px; border-radius: 9px; cursor: pointer;
-  }
-  .tabs button.on { background: rgba(95, 182, 240, 0.24); color: #fff; }
-
-  /* ---- study card ---- */
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 20px;
-    padding: 26px 22px 20px;
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-    box-shadow: 0 30px 60px -34px rgba(0, 0, 0, 0.85);
-  }
-  .word { font-size: clamp(30px, 7vw, 46px); font-weight: 700; letter-spacing: -0.02em; text-align: center; word-break: break-word; }
-  .phon { text-align: center; color: var(--muted); font-family: ui-monospace, Consolas, monospace; font-size: 14px; margin-top: 6px; min-height: 20px; }
-  .meaning {
-    margin-top: 18px; padding-top: 16px; border-top: 1px dashed var(--line);
-    font-size: 15px; line-height: 1.75; color: #dfe9ff; min-height: 58px;
-  }
-  .meaning.hidden { color: transparent; text-shadow: 0 0 14px rgba(223, 233, 255, .35); user-select: none; }
-  .reveal-hint { color: var(--muted); font-size: 12.5px; text-align: center; padding: 20px 0; }
-
-  .actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-  .actions .btn { flex: 1; justify-content: center; padding: 13px; font-size: 13.5px; font-weight: 600; }
-  .btn.primary { background: linear-gradient(135deg, #3f9fe0, #7fd2ff); border: 0; color: #fff; box-shadow: 0 14px 28px -16px rgba(63, 159, 224, .95); }
-  .btn.good { border-color: rgba(70, 213, 155, .5); background: rgba(70, 213, 155, .16); color: #b8ffe0; }
-  .btn.bad  { border-color: rgba(255, 157, 92, .5); background: rgba(255, 157, 92, .16); color: #ffdcbe; }
-
-  .progress { margin-top: 14px; }
-  .bar { height: 5px; border-radius: 99px; background: rgba(255,255,255,.09); overflow: hidden; }
-  .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #3f9fe0, #7fd2ff); transition: width .3s ease; }
-  .progress .meta { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-top: 7px; }
-
-  /* ---- list ---- */
-  .list { display: flex; flex-direction: column; gap: 8px; }
-  .row {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 12px 14px; border-radius: 13px;
+    display: inline-flex; align-items: center; gap: 5px; color: var(--muted);
+    text-decoration: none; font-size: 12px; padding: 5px 9px; border-radius: 8px;
     border: 1px solid var(--line); background: var(--chip);
   }
-  .row .w { font-weight: 650; font-size: 15px; min-width: 120px; }
-  .row .m { flex: 1; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
-  .row .x { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 3px 7px; border-radius: 7px; }
-  .row .x:hover { color: var(--ink); background: rgba(255,255,255,.08); }
-  .empty { text-align: center; color: var(--muted); font-size: 13px; padding: 46px 0; }
+  .back:hover { color: var(--ink); border-color: var(--sky); }
+  h1 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
+  .stat { margin-left: auto; display: flex; gap: 12px; font-size: 11.5px; color: var(--muted); }
+  .stat b { color: var(--ink); font-weight: 650; }
 
-  /* ---- sync panel ---- */
-  .sheet {
-    position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
-    background: rgba(4, 8, 16, .66); backdrop-filter: blur(6px); padding: 16px;
+  .toolbar { display: flex; gap: 7px; flex-wrap: wrap; padding: 2px 0 12px; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 11px; border-radius: 9px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--chip); color: var(--ink);
+    font-family: inherit; font-size: 12px; white-space: nowrap;
+    transition: border-color .15s ease, background .15s ease, color .15s ease;
   }
-  .sheet[hidden] { display: none; }
-  .sheet-box {
-    width: min(460px, 100%); background: #0e1526; border: 1px solid var(--line);
-    border-radius: 18px; padding: 20px; box-shadow: 0 30px 70px -30px #000;
+  .btn:hover { border-color: var(--sky); background: rgba(95, 182, 240, 0.13); }
+  .btn.on { border-color: var(--sky); background: rgba(95, 182, 240, 0.2); color: #fff; }
+
+  .search {
+    display: flex; align-items: center; gap: 6px; flex: 1; min-width: 150px;
+    border: 1px solid var(--line); background: var(--chip); border-radius: 9px; padding: 0 10px;
   }
+  .search input {
+    flex: 1; min-width: 0; border: 0; background: none; outline: none;
+    color: var(--ink); font-family: inherit; font-size: 12.5px; padding: 7px 0;
+  }
+  .search input::placeholder { color: var(--muted); }
+
+  .tabs { display: flex; gap: 5px; padding: 3px; border-radius: 11px; background: var(--chip); border: 1px solid var(--line); width: fit-content; margin-bottom: 12px; }
+  .tabs button { border: 0; background: none; color: var(--muted); font-family: inherit; font-size: 12px; padding: 6px 14px; border-radius: 8px; cursor: pointer; }
+  .tabs button.on { background: rgba(95, 182, 240, 0.24); color: #fff; }
+
+  /* ---------- list rows ---------- */
+  .list { display: flex; flex-direction: column; gap: 7px; }
+  .item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 12px;
+    align-items: center;
+    padding: 11px 13px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    animation: fadeIn .18s ease both;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+  .item.out { opacity: 0; transform: translateX(10px); transition: opacity .18s ease, transform .18s ease; }
+
+  .wline { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+  .w { font-size: 16.5px; font-weight: 650; letter-spacing: -0.01em; word-break: break-word; }
+  .freq {
+    flex: none; font-size: 10.5px; color: var(--sky-2);
+    padding: 1px 6px; border-radius: 999px;
+    background: rgba(95, 182, 240, 0.14); border: 1px solid rgba(95, 182, 240, 0.28);
+    font-variant-numeric: tabular-nums;
+  }
+  .sub { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+  .phon { font-family: ui-monospace, Consolas, monospace; font-size: 11.5px; color: var(--muted); }
+  .meaning { font-size: 12.5px; line-height: 1.65; color: #d8e5ff; margin-top: 3px; }
+  .meaning.dim { color: var(--muted); font-style: italic; }
+
+  .ops { display: flex; gap: 6px; flex: none; }
+  .op {
+    border: 1px solid var(--line); background: var(--chip); color: var(--ink);
+    font-family: inherit; font-size: 11.5px; padding: 6px 10px; border-radius: 8px;
+    cursor: pointer; white-space: nowrap;
+    transition: border-color .15s ease, background .15s ease, color .15s ease;
+  }
+  .op:hover { border-color: var(--sky); background: rgba(95, 182, 240, 0.14); }
+  .op.on { border-color: var(--sky); background: rgba(95, 182, 240, 0.2); }
+  .op.new { border-color: rgba(255, 157, 92, 0.42); background: rgba(255, 157, 92, 0.12); color: #ffd9b8; }
+  .op.new:hover { border-color: var(--warn); background: rgba(255, 157, 92, 0.2); }
+  .op.known { border-color: rgba(70, 213, 155, 0.42); background: rgba(70, 213, 155, 0.12); color: #bff5df; }
+  .op.known:hover { border-color: var(--good); background: rgba(70, 213, 155, 0.2); }
+  .op.gray { color: var(--muted); }
+
+  .empty { text-align: center; color: var(--muted); font-size: 13px; padding: 50px 0; }
+  .more { display: flex; justify-content: center; padding: 16px 0 8px; }
+  .count { font-size: 11.5px; color: var(--muted); padding: 8px 2px 4px; }
+
+  /* ---------- sync sheet ---------- */
+  .sheet { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(4, 8, 16, .66); backdrop-filter: blur(6px); padding: 16px; }
+  .sheet-box { width: min(460px, 100%); background: #0e1526; border: 1px solid var(--line); border-radius: 18px; padding: 20px; box-shadow: 0 30px 70px -30px #000; }
   .sheet-box h2 { margin: 0 0 6px; font-size: 15px; }
   .sheet-box p { margin: 0 0 14px; font-size: 12px; line-height: 1.7; color: var(--muted); }
-  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 11px; }
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
   .field label { font-size: 11.5px; color: var(--muted); }
-  .field input {
-    background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 9px;
-    padding: 9px 11px; color: var(--ink); font-family: ui-monospace, Consolas, monospace; font-size: 12px;
-    outline: none;
-  }
+  .field input { background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; color: var(--ink); font-family: ui-monospace, Consolas, monospace; font-size: 12px; outline: none; }
   .field input:focus { border-color: var(--sky); }
-  .sheet-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .sheet-actions { display: flex; gap: 8px; margin-top: 12px; }
   .sheet-actions .btn { flex: 1; justify-content: center; }
   .status { font-size: 11.5px; color: var(--muted); margin-top: 10px; min-height: 16px; }
   .status.ok { color: var(--good); }
   .status.err { color: var(--danger); }
 
   .toast {
-    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(10px);
-    background: rgba(20, 30, 50, .95); border: 1px solid var(--line);
-    padding: 9px 16px; border-radius: 11px; font-size: 12.5px; opacity: 0;
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(8px);
+    background: rgba(20, 30, 50, .96); border: 1px solid var(--line);
+    padding: 8px 15px; border-radius: 10px; font-size: 12px; opacity: 0;
     transition: opacity .2s ease, transform .2s ease; pointer-events: none; z-index: 80;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  @media (max-width: 520px) {
+  @media (max-width: 620px) {
+    .item { grid-template-columns: 1fr; }
+    .ops { margin-top: 8px; }
+    .ops .op { flex: 1; justify-content: center; text-align: center; padding: 8px 6px; }
     .stat { width: 100%; margin-left: 0; justify-content: space-between; }
-    .row { flex-direction: column; gap: 5px; }
-    .row .w { min-width: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { transition-duration: .001ms !important; animation-duration: .001ms !important; }
@@ -170,7 +169,13 @@
   </header>
 
   <div class="toolbar">
-    <button class="btn" id="btnShuffle">随机顺序</button>
+    <div class="search">
+      <span style="color:var(--muted);font-size:13px">⌕</span>
+      <input id="q" placeholder="搜索单词或释义…" autocomplete="off" spellcheck="false" />
+    </div>
+    <button class="btn on" data-sort="freq">按频次</button>
+    <button class="btn" data-sort="az">按字母</button>
+    <button class="btn" data-sort="rand">随机</button>
     <button class="btn" id="btnSync">云同步</button>
     <button class="btn" id="btnExport">导出</button>
     <button class="btn" id="btnImport">导入</button>
@@ -183,39 +188,15 @@
     <button data-tab="known">熟词本</button>
   </div>
 
-  <section id="paneStudy">
-    <div class="card">
-      <div class="word" id="word">—</div>
-      <div class="phon" id="phon"></div>
-      <div class="meaning hidden" id="meaning">点击「显示释义」查看</div>
-      <div class="reveal-hint" id="hint">先想一想它的意思，再显示答案</div>
-      <div class="actions">
-        <button class="btn primary" id="btnReveal">显示释义（空格）</button>
-      </div>
-      <div class="actions" id="markRow" hidden>
-        <button class="btn bad" id="btnNew">不认识 → 生词（1）</button>
-        <button class="btn good" id="btnKnown">认识 → 熟词（2）</button>
-      </div>
-      <div class="progress">
-        <div class="bar"><i id="bar"></i></div>
-        <div class="meta"><span id="pos">0 / 0</span><span id="pct">0%</span></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="paneList" hidden>
-    <div class="list" id="listBody"></div>
-  </section>
+  <div class="count" id="count"></div>
+  <div class="list" id="list"></div>
+  <div class="more" id="more" hidden><button class="btn" id="btnMore">加载更多</button></div>
 </div>
 
 <div class="sheet" id="sheet" hidden>
   <div class="sheet-box">
     <h2>跨设备同步</h2>
-    <p>
-      用你自己的 GitHub 仓库存进度：填一个<strong>只对该仓库有 Contents 读写权限</strong>的细粒度 Token，
-      数据会写进仓库里的 <code>wordbook.json</code>。手机和电脑填同一个仓库即可共用进度。<br />
-      Token 只保存在本机浏览器，不会上传到别的地方。
-    </p>
+    <p>用你自己的 GitHub 仓库存进度：填一个<strong>只对该仓库有 Contents 读写权限</strong>的 Token，数据写进仓库里的 <code>wordbook.json</code>。手机和电脑填同一个仓库即可共用进度。Token 只保存在本机浏览器。</p>
     <div class="field">
       <label>仓库（owner/repo）</label>
       <input id="syncRepo" placeholder="ericlee669/web1" autocomplete="off" spellcheck="false" />
@@ -225,12 +206,12 @@
       <input id="syncPath" placeholder="wordbook.json" autocomplete="off" spellcheck="false" />
     </div>
     <div class="field">
-      <label>Token（github_pat_… 或 ghp_…）</label>
-      <input id="syncToken" type="password" placeholder="只读保存在本机" autocomplete="off" spellcheck="false" />
+      <label>Token</label>
+      <input id="syncToken" type="password" placeholder="github_pat_… 或 ghp_…" autocomplete="off" spellcheck="false" />
     </div>
     <div class="sheet-actions">
       <button class="btn" id="btnSyncClose">关闭</button>
-      <button class="btn primary" id="btnSyncNow">立即同步</button>
+      <button class="btn on" id="btnSyncNow">立即同步</button>
     </div>
     <div class="status" id="syncStatus"></div>
   </div>
@@ -246,11 +227,10 @@
   var WORDS = (window.WORDS || []).slice();
   var KEY_STATE = "wordlearner.state.v1";
   var KEY_CFG = "wordlearner.sync.v1";
+  var PAGE = 60;
 
   /* ---------- state ---------- */
-  // marks: { [wordKey]: { s: "new" | "known", t: timestamp } }
   var state = { v: 1, updatedAt: 0, marks: {} };
-
   function wordKey(w) { return String(w).toLowerCase().replace(/\s+/g, " ").trim(); }
   function loadState() {
     try {
@@ -264,218 +244,235 @@
   var saveTimer = null;
   function saveState(immediate) {
     state.updatedAt = Date.now();
-    if (immediate) {
+    clearTimeout(saveTimer);
+    var write = function () {
       try { localStorage.setItem(KEY_STATE, JSON.stringify(state)); } catch (e) {}
       schedulePush();
-    } else {
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(function () {
-        try { localStorage.setItem(KEY_STATE, JSON.stringify(state)); } catch (e) {}
-        schedulePush();
-      }, 400);
-    }
+    };
+    if (immediate) write(); else saveTimer = setTimeout(write, 350);
   }
-
   function markOf(w) { return state.marks[wordKey(w)]; }
-  function setMark(w, s) {
-    var k = wordKey(w);
-    state.marks[k] = { s: s, t: Date.now() };
-    saveState();
-  }
-  function clearMark(w) {
-    delete state.marks[wordKey(w)];
-    saveState();
-  }
-
-  /* ---------- queues ---------- */
-  var shuffled = false;
-  var queue = [];      // words being studied (unmarked)
-  var qi = 0;          // index into queue
-  var revealed = false;
-  var current = null;
-
-  function rebuildQueue(keepCurrent) {
-    var un = WORDS.filter(function (x) { return !markOf(x.w); });
-    if (shuffled) un = shuffle(un);
-    if (keepCurrent && current) {
-      var idx = un.findIndex(function (x) { return wordKey(x.w) === wordKey(current.w); });
-      if (idx >= 0) { queue = un; qi = idx; return; }
-    }
-    queue = un;
-    qi = 0;
-  }
-  function shuffle(a) {
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = a[i]; a[i] = a[j]; a[j] = t;
-    }
-    return a;
-  }
-
-  /* ---------- dom ---------- */
-  var $ = function (id) { return document.getElementById(id); };
-  var elWord = $("word"), elPhon = $("phon"), elMeaning = $("meaning"),
-      elHint = $("hint"), elBar = $("bar"), elPos = $("pos"), elPct = $("pct"),
-      markRow = $("markRow"), btnReveal = $("btnReveal"),
-      sLeft = $("sLeft"), sNew = $("sNew"), sKnown = $("sKnown"),
-      paneStudy = $("paneStudy"), paneList = $("paneList"), listBody = $("listBody"),
-      tabs = $("tabs");
-
-  var tab = "study";
+  function setMark(w, s) { state.marks[wordKey(w)] = { s: s, t: Date.now() }; saveState(true); }
+  function clearMark(w) { delete state.marks[wordKey(w)]; saveState(true); }
 
   function stats() {
     var n = 0, k = 0;
     for (var i = 0; i < WORDS.length; i++) {
-      var m = markOf(WORDS[i].w);
-      if (!m) continue;
+      var m = markOf(WORDS[i].w); if (!m) continue;
       if (m.s === "known") k++; else n++;
     }
     return { total: WORDS.length, known: k, neww: n, left: WORDS.length - k - n };
   }
-
   function renderStats() {
     var s = stats();
-    sLeft.textContent = s.left;
-    sNew.textContent = s.neww;
-    sKnown.textContent = s.known;
-    var done = s.total - s.left;
-    elBar.style.width = (s.total ? (done / s.total * 100) : 0).toFixed(1) + "%";
-    elPos.textContent = done + " / " + s.total;
-    elPct.textContent = (s.total ? Math.round(done / s.total * 100) : 0) + "%";
+    $("sLeft").textContent = s.left;
+    $("sNew").textContent = s.neww;
+    $("sKnown").textContent = s.known;
   }
 
-  function renderCard() {
-    if (!queue.length || qi >= queue.length) {
-      current = null;
-      elWord.textContent = "🎉";
-      elPhon.textContent = "";
-      elMeaning.classList.remove("hidden");
-      elMeaning.textContent = "这一轮学完了。去生词本复习，或到熟词本解除标记。";
-      elHint.textContent = "";
-      btnReveal.hidden = true;
-      markRow.hidden = true;
+  /* ---------- view state ---------- */
+  var tab = "study";
+  var sortMode = "freq";
+  var query = "";
+  var revealed = {};      // key -> true (session only)
+  var shown = 0;
+  var currentRows = [];
+
+  function $ (id) { return document.getElementById(id); }
+
+  function matches(x) {
+    if (!query) return true;
+    var q = query.toLowerCase();
+    return x.w.toLowerCase().indexOf(q) >= 0 || (x.m || "").toLowerCase().indexOf(q) >= 0;
+  }
+
+  function buildRows() {
+    var arr;
+    if (tab === "study") {
+      arr = WORDS.filter(function (x) { return !markOf(x.w) && matches(x); });
+    } else {
+      arr = WORDS.filter(function (x) {
+        var m = markOf(x.w);
+        return m && m.s === tab && matches(x);
+      });
+    }
+    if (sortMode === "freq") arr.sort(function (a, b) { return (b.f || 0) - (a.f || 0); });
+    else if (sortMode === "az") arr.sort(function (a, b) { return a.w.toLowerCase() < b.w.toLowerCase() ? -1 : 1; });
+    else if (sortMode === "rand") {
+      for (var i = arr.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+    }
+    return arr;
+  }
+
+  function makeItem(x, forBook) {
+    var item = document.createElement("div");
+    item.className = "item";
+
+    var left = document.createElement("div");
+    var wline = document.createElement("div");
+    wline.className = "wline";
+    var w = document.createElement("span");
+    w.className = "w";
+    w.textContent = x.w;
+    wline.appendChild(w);
+    if (x.f) {
+      var f = document.createElement("span");
+      f.className = "freq";
+      f.textContent = "×" + x.f;
+      f.title = "词频 " + x.f + "（来自原 PDF）";
+      wline.appendChild(f);
+    }
+    left.appendChild(wline);
+
+    var sub = document.createElement("div");
+    sub.className = "sub";
+    if (x.p) {
+      var ph = document.createElement("span");
+      ph.className = "phon";
+      ph.textContent = x.p;
+      sub.appendChild(ph);
+    }
+    left.appendChild(sub);
+
+    var meaning = document.createElement("div");
+    meaning.className = "meaning";
+    var key = wordKey(x.w);
+    if (revealed[key]) {
+      meaning.textContent = x.m;
+    } else {
+      meaning.textContent = x.m;
+      meaning.hidden = true;
+    }
+    left.appendChild(meaning);
+
+    var ops = document.createElement("div");
+    ops.className = "ops";
+
+    var bShow = document.createElement("button");
+    bShow.className = "op";
+    bShow.textContent = revealed[key] ? "隐藏意思" : "显示意思";
+    bShow.addEventListener("click", function () {
+      if (revealed[key]) { delete revealed[key]; meaning.hidden = true; bShow.textContent = "显示意思"; }
+      else { revealed[key] = true; meaning.hidden = false; bShow.textContent = "隐藏意思"; }
+    });
+    ops.appendChild(bShow);
+
+    if (!forBook) {
+      var bNew = document.createElement("button");
+      bNew.className = "op new";
+      bNew.textContent = "生词";
+      bNew.addEventListener("click", function () {
+        setMark(x.w, "new");
+        removeRow(item);
+        toast("已加入生词本");
+      });
+      ops.appendChild(bNew);
+
+      var bKnown = document.createElement("button");
+      bKnown.className = "op known";
+      bKnown.textContent = "熟词";
+      bKnown.addEventListener("click", function () {
+        setMark(x.w, "known");
+        removeRow(item);
+        toast("已标记为熟词");
+      });
+      ops.appendChild(bKnown);
+    } else {
+      var bOut = document.createElement("button");
+      bOut.className = "op gray";
+      bOut.textContent = "移出";
+      bOut.addEventListener("click", function () {
+        clearMark(x.w);
+        removeRow(item);
+        toast("已移出，回到待学");
+      });
+      ops.appendChild(bOut);
+    }
+
+    item.appendChild(left);
+    item.appendChild(ops);
+    return item;
+  }
+
+  function removeRow(item) {
+    item.classList.add("out");
+    setTimeout(function () {
+      item.remove();
+      renderStats();
+      var rest = $("list").children.length;
+      if (rest === 0) renderList();
+    }, 180);
+  }
+
+  function renderList() {
+    currentRows = buildRows();
+    shown = 0;
+    var list = $("list");
+    list.textContent = "";
+    $("count").textContent = currentRows.length
+      ? (tab === "study" ? "待学 " : tab === "new" ? "生词 " : "熟词 ") + currentRows.length + " 个"
+      : "";
+    if (!currentRows.length) {
+      var e = document.createElement("div");
+      e.className = "empty";
+      e.textContent = query
+        ? "没有匹配的单词"
+        : (tab === "study" ? "全部学完了 🎉 去生词本复习吧" : tab === "known" ? "还没有熟词" : "还没有生词");
+      list.appendChild(e);
+      $("more").hidden = true;
       renderStats();
       return;
     }
-    current = queue[qi];
-    revealed = false;
-    elWord.textContent = current.w;
-    elPhon.textContent = "· · ·";
-    elMeaning.classList.add("hidden");
-    elMeaning.textContent = "· · ·";
-    elHint.textContent = "先想一想它的意思，再显示答案";
-    btnReveal.hidden = false;
-    btnReveal.textContent = "显示释义（空格）";
-    markRow.hidden = true;
+    appendPage();
     renderStats();
   }
 
-  function reveal() {
-    if (!current || revealed) return;
-    revealed = true;
-    elPhon.textContent = current.p || "";
-    elMeaning.classList.remove("hidden");
-    elMeaning.textContent = current.m;
-    elHint.textContent = "";
-    btnReveal.hidden = true;
-    markRow.hidden = false;
-  }
-
-  function advance() {
-    if (qi < queue.length) queue.splice(qi, 1);
-    if (qi >= queue.length) qi = 0;
-    renderCard();
-  }
-
-  /* ---------- list view ---------- */
-  function renderList(kind) {
-    var rows = WORDS.filter(function (x) {
-      var m = markOf(x.w);
-      return m && m.s === kind;
-    });
-    listBody.textContent = "";
-    if (!rows.length) {
-      var d = document.createElement("div");
-      d.className = "empty";
-      d.textContent = kind === "known" ? "还没有熟词。学习时点「认识」就会进来。" : "还没有生词。学习时点「不认识」就会进来。";
-      listBody.appendChild(d);
-      return;
-    }
+  function appendPage() {
     var frag = document.createDocumentFragment();
-    rows.forEach(function (x) {
-      var row = document.createElement("div");
-      row.className = "row";
-      var w = document.createElement("div"); w.className = "w"; w.textContent = x.w;
-      var m = document.createElement("div"); m.className = "m"; m.textContent = (x.p ? x.p + "  " : "") + x.m;
-      var b = document.createElement("button");
-      b.className = "x";
-      b.textContent = "移出";
-      b.addEventListener("click", function () {
-        clearMark(x.w);
-        renderList(kind); renderStats(); rebuildQueue(false); renderCard();
-        toast("已移出，回到待学");
-      });
-      row.appendChild(w); row.appendChild(m); row.appendChild(b);
-      frag.appendChild(row);
-    });
-    listBody.appendChild(frag);
+    var end = Math.min(shown + PAGE, currentRows.length);
+    for (var i = shown; i < end; i++) frag.appendChild(makeItem(currentRows[i], tab !== "study"));
+    $("list").appendChild(frag);
+    shown = end;
+    $("more").hidden = shown >= currentRows.length;
   }
 
-  function switchTab(t) {
-    tab = t;
-    Array.prototype.forEach.call(tabs.children, function (b) {
-      b.classList.toggle("on", b.dataset.tab === t);
+  /* ---------- tabs & sorting ---------- */
+  $("tabs").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-tab]");
+    if (!b) return;
+    tab = b.dataset.tab;
+    Array.prototype.forEach.call($("tabs").children, function (x) { x.classList.toggle("on", x === b); });
+    renderList();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-sort]"), function (b) {
+    b.addEventListener("click", function () {
+      sortMode = b.dataset.sort;
+      Array.prototype.forEach.call(document.querySelectorAll("[data-sort]"), function (x) { x.classList.toggle("on", x === b); });
+      renderList();
     });
-    if (t === "study") {
-      paneStudy.hidden = false; paneList.hidden = true;
-      rebuildQueue(false); renderCard();
-    } else {
-      paneStudy.hidden = true; paneList.hidden = false;
-      renderList(t);
-    }
-  }
+  });
+
+  var qTimer;
+  $("q").addEventListener("input", function () {
+    clearTimeout(qTimer);
+    qTimer = setTimeout(function () { query = $("q").value.trim(); renderList(); }, 160);
+  });
+
+  $("btnMore").addEventListener("click", appendPage);
 
   /* ---------- toast ---------- */
-  var toastEl = $("toast"), toastTimer;
+  var toastTimer;
   function toast(msg) {
-    toastEl.textContent = msg;
-    toastEl.classList.add("show");
+    var el = $("toast");
+    el.textContent = msg;
+    el.classList.add("show");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 1600);
+    toastTimer = setTimeout(function () { el.classList.remove("show"); }, 1500);
   }
-
-  /* ---------- events ---------- */
-  $("btnReveal").addEventListener("click", reveal);
-  $("btnNew").addEventListener("click", function () {
-    if (!current) return;
-    setMark(current.w, "new");
-    toast("已加入生词本");
-    advance();
-  });
-  $("btnKnown").addEventListener("click", function () {
-    if (!current) return;
-    setMark(current.w, "known");
-    toast("已标记为熟词");
-    advance();
-  });
-  $("btnShuffle").addEventListener("click", function () {
-    shuffled = !shuffled;
-    this.classList.toggle("on", shuffled);
-    rebuildQueue(true); renderCard();
-    toast(shuffled ? "已开启随机顺序" : "已恢复原始顺序");
-  });
-  tabs.addEventListener("click", function (e) {
-    var b = e.target.closest("button[data-tab]");
-    if (b) switchTab(b.dataset.tab);
-  });
-
-  document.addEventListener("keydown", function (e) {
-    if (document.getElementById("sheet").hidden === false) return;
-    if (tab !== "study" || !current) return;
-    if (e.code === "Space") { e.preventDefault(); reveal(); }
-    else if (e.key === "1") { if (revealed) $("btnNew").click(); }
-    else if (e.key === "2") { if (revealed) $("btnKnown").click(); }
-  });
 
   /* ---------- import / export ---------- */
   $("btnExport").addEventListener("click", function () {
@@ -498,8 +495,7 @@
         if (!p || !p.marks) throw new Error("格式不对");
         mergeInto(p);
         saveState(true);
-        rebuildQueue(false); renderCard(); renderStats();
-        if (tab !== "study") renderList(tab);
+        renderList();
         toast("导入成功，已合并");
       } catch (err) { toast("导入失败：" + err.message); }
       e.target.value = "";
@@ -507,7 +503,6 @@
     r.readAsText(f, "utf-8");
   });
 
-  /* ---------- merge ---------- */
   function mergeInto(other) {
     var om = (other && other.marks) || {};
     Object.keys(om).forEach(function (k) {
@@ -523,35 +518,19 @@
     var c = JSON.parse(localStorage.getItem(KEY_CFG) || "null");
     if (c) cfg = { repo: c.repo || "", path: c.path || "wordbook.json", token: c.token || "" };
   } catch (e) {}
-
-  function saveCfg() {
-    try { localStorage.setItem(KEY_CFG, JSON.stringify(cfg)); } catch (e) {}
-  }
+  function saveCfg() { try { localStorage.setItem(KEY_CFG, JSON.stringify(cfg)); } catch (e) {} }
   function hasSync() { return !!(cfg.repo && cfg.token); }
 
   var ghSha = null;
   function ghHeaders() {
-    return {
-      Authorization: "Bearer " + cfg.token,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-    };
+    return { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
   }
-  function b64encodeUtf8(str) {
-    return btoa(unescape(encodeURIComponent(str)));
-  }
-  function b64decodeUtf8(b64) {
-    return decodeURIComponent(escape(atob(String(b64).replace(/\s/g, ""))));
-  }
-  function ghUrl() {
-    return "https://api.github.com/repos/" + cfg.repo + "/contents/" + encodeURI(cfg.path);
-  }
-
+  function b64encodeUtf8(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function b64decodeUtf8(b) { return decodeURIComponent(escape(atob(String(b).replace(/\s/g, "")))); }
+  function ghUrl() { return "https://api.github.com/repos/" + cfg.repo + "/contents/" + encodeURI(cfg.path); }
   function syncStatus(msg, cls) {
-    var el = $("syncStatus");
-    if (!el) return;
-    el.textContent = msg || "";
-    el.className = "status" + (cls ? " " + cls : "");
+    var el = $("syncStatus"); if (!el) return;
+    el.textContent = msg || ""; el.className = "status" + (cls ? " " + cls : "");
   }
 
   function pull() {
@@ -566,42 +545,25 @@
       .then(function (data) {
         if (!data) return false;
         ghSha = data.sha;
-        var remote = JSON.parse(b64decodeUtf8(data.content));
-        mergeInto(remote);
+        mergeInto(JSON.parse(b64decodeUtf8(data.content)));
         try { localStorage.setItem(KEY_STATE, JSON.stringify(state)); } catch (e) {}
-        rebuildQueue(false); renderCard(); renderStats();
-        if (tab !== "study") renderList(tab);
+        renderList();
         syncStatus("已拉取云端进度", "ok");
         return true;
       })
-      .catch(function (e) {
-        syncStatus("拉取失败：" + e.message, "err");
-        return false;
-      });
+      .catch(function (e) { syncStatus("拉取失败：" + e.message, "err"); return false; });
   }
 
   var pushTimer = null, pushing = false, pushAgain = false;
-  function schedulePush() {
-    if (!hasSync()) return;
-    clearTimeout(pushTimer);
-    pushTimer = setTimeout(function () { push(); }, 1500);
-  }
+  function schedulePush() { if (!hasSync()) return; clearTimeout(pushTimer); pushTimer = setTimeout(push, 1500); }
   function push() {
     if (!hasSync()) return Promise.resolve();
     if (pushing) { pushAgain = true; return Promise.resolve(); }
     pushing = true;
     syncStatus("正在保存到云端…");
-    var body = {
-      message: "wordbook sync " + new Date().toISOString(),
-      content: b64encodeUtf8(JSON.stringify(state)),
-      branch: "main",
-    };
+    var body = { message: "wordbook sync " + new Date().toISOString(), content: b64encodeUtf8(JSON.stringify(state)), branch: "main" };
     if (ghSha) body.sha = ghSha;
-    return fetch(ghUrl(), {
-      method: "PUT",
-      headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders()),
-      body: JSON.stringify(body),
-    })
+    return fetch(ghUrl(), { method: "PUT", headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders()), body: JSON.stringify(body) })
       .then(function (r) {
         if (r.ok) return r.json();
         if (r.status === 409 || r.status === 422) {
@@ -609,34 +571,18 @@
             .then(function (x) { return x.ok ? x.json() : null; })
             .then(function (d) {
               if (!d) throw new Error("冲突且无法读取最新版本");
-              ghSha = d.sha;
-              body.sha = d.sha;
-              return fetch(ghUrl(), {
-                method: "PUT",
-                headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders()),
-                body: JSON.stringify(body),
-              }).then(function (r2) {
-                if (!r2.ok) throw new Error("写入失败 HTTP " + r2.status);
-                return r2.json();
-              });
+              ghSha = d.sha; body.sha = d.sha;
+              return fetch(ghUrl(), { method: "PUT", headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders()), body: JSON.stringify(body) })
+                .then(function (r2) { if (!r2.ok) throw new Error("写入失败 HTTP " + r2.status); return r2.json(); });
             });
         }
         throw new Error("写入失败 HTTP " + r.status);
       })
-      .then(function (res) {
-        if (res && res.content) ghSha = res.content.sha;
-        syncStatus("已保存到云端", "ok");
-      })
-      .catch(function (e) {
-        syncStatus("保存失败：" + e.message, "err");
-      })
-      .then(function () {
-        pushing = false;
-        if (pushAgain) { pushAgain = false; push(); }
-      });
+      .then(function (res) { if (res && res.content) ghSha = res.content.sha; syncStatus("已保存到云端", "ok"); })
+      .catch(function (e) { syncStatus("保存失败：" + e.message, "err"); })
+      .then(function () { pushing = false; if (pushAgain) { pushAgain = false; push(); } });
   }
 
-  /* sheet */
   var sheet = $("sheet");
   $("btnSync").addEventListener("click", function () {
     $("syncRepo").value = cfg.repo;
@@ -653,19 +599,13 @@
     cfg.token = $("syncToken").value.trim();
     saveCfg();
     if (!hasSync()) { syncStatus("仓库和 Token 都要填", "err"); return; }
-    pull().then(function () { return push(); }).then(function () {
-      toast("同步完成");
-    });
+    pull().then(function () { return push(); }).then(function () { toast("同步完成"); });
   });
 
   /* ---------- boot ---------- */
   loadState();
-  rebuildQueue(false);
-  renderCard();
-  renderStats();
+  renderList();
   if (hasSync()) pull();
-
-  // 别的标签页/设备写完后，本页刷新时可再次拉取
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "visible" && hasSync()) pull();
   });
@@ -673,3 +613,4 @@
 </script>
 </body>
 </html>
+
