@@ -1,5 +1,5 @@
-/* Service worker: offline shell for the Pixiv-jump / word-learning page. */
-const CACHE = "pj-v1";
+﻿/* Service worker: offline shell for the Pixiv-jump / word-learning page. */
+const CACHE = "pj-v2";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -66,3 +66,4 @@ self.addEventListener("fetch", (event) => {
     }),
   );
 });
+
