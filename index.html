@@ -302,11 +302,11 @@
   }
 
   /* ---------- optional tool entry ---------- */
+  .tool-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   .tool-link {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-top: 14px;
     padding: 9px 13px;
     border-radius: 11px;
     border: 1px dashed rgba(255, 255, 255, 0.20);
@@ -589,15 +589,26 @@
         浏览 Pixiv 需要账号登录，部分地区可能需网络代理
       </footer>
 
-      <a class="tool-link" href="quiz.html" target="_blank" rel="noopener">
-        <span class="tool-ico">📖</span>
-        <span>智能控制原理 · 复习题库</span>
-        <span class="tool-tag">可选</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M7 17 17 7" /><path d="M9 7h8v8" />
-        </svg>
-      </a>
+      <div class="tool-row">
+        <a class="tool-link" href="learn.html">
+          <span class="tool-ico">🔤</span>
+          <span>单词学习</span>
+          <span class="tool-tag">1283 词</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 17 17 7" /><path d="M9 7h8v8" />
+          </svg>
+        </a>
+        <a class="tool-link" href="quiz.html" target="_blank" rel="noopener">
+          <span class="tool-ico">📖</span>
+          <span>智能控制原理 · 复习题库</span>
+          <span class="tool-tag">可选</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 17 17 7" /><path d="M9 7h8v8" />
+          </svg>
+        </a>
+      </div>
     </main>
   </div>
 
