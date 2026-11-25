@@ -190,7 +190,7 @@
 
   <div class="count" id="count"></div>
   <div class="list" id="list"></div>
-  <div class="more" id="more" hidden><button class="btn" id="btnMore">加载更多</button></div>
+  <div class="more" id="more" hidden></div>
 </div>
 
 <div class="sheet" id="sheet" hidden>
@@ -227,7 +227,7 @@
   var WORDS = (window.WORDS || []).slice();
   var KEY_STATE = "wordlearner.state.v1";
   var KEY_CFG = "wordlearner.sync.v1";
-  var PAGE = 60;
+  var PAGE = 80;
 
   /* ---------- state ---------- */
   var state = { v: 1, updatedAt: 0, marks: {} };
@@ -428,6 +428,7 @@
     }
     appendPage();
     renderStats();
+    setTimeout(fillViewport, 0);
   }
 
   function appendPage() {
@@ -436,7 +437,7 @@
     for (var i = shown; i < end; i++) frag.appendChild(makeItem(currentRows[i], tab !== "study"));
     $("list").appendChild(frag);
     shown = end;
-    $("more").hidden = shown >= currentRows.length;
+    $("more").hidden = true;
   }
 
   /* ---------- tabs & sorting ---------- */
@@ -462,7 +463,27 @@
     qTimer = setTimeout(function () { query = $("q").value.trim(); renderList(); }, 160);
   });
 
-  $("btnMore").addEventListener("click", appendPage);
+  // 首屏内容不足一屏时继续补齐，保证可滚动
+  function fillViewport(tries) {
+    tries = tries || 0;
+    if (tries > 30 || shown >= currentRows.length) return;
+    if (document.documentElement.scrollHeight <= window.innerHeight + 80) {
+      appendPage();
+      fillViewport(tries + 1);
+    }
+  }
+
+  // 滚动到底部自动加载下一批，无需点按钮
+  var autoLoading = false;
+  window.addEventListener("scroll", function () {
+    if (autoLoading || shown >= currentRows.length) return;
+    var doc = document.documentElement;
+    if (window.innerHeight + window.scrollY >= doc.scrollHeight - 600) {
+      autoLoading = true;
+      appendPage();
+      autoLoading = false;
+    }
+  }, { passive: true });
 
   /* ---------- toast ---------- */
   var toastTimer;
@@ -631,6 +652,9 @@
 </script>
 </body>
 </html>
+
+
+
 
 
 
