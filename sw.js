@@ -1,5 +1,5 @@
 ﻿/* Service worker: offline shell for the Pixiv-jump / word-learning page. */
-const CACHE = "pj-v3";
+const CACHE = "pj-v4";
 const PRECACHE = [
   "./",
   "./index.html",
