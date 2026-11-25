@@ -162,7 +162,16 @@
   @media (prefers-reduced-motion: reduce) {
     * { transition-duration: .001ms !important; animation-duration: .001ms !important; }
   }
-</style>
+
+  /* pwa-safe-area */
+  html { background: #080d18; }
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    background-color: #080d18;
+  }
+  </style>
 </head>
 <body>
 <div class="wrap">
