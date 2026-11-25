@@ -6,15 +6,14 @@
   "dir": "ltr",
   "start_url": "./learn.html",
   "scope": "./",
-  "display": "fullscreen",
+  "display": "standalone",
   "display_override": [
-    "fullscreen",
     "standalone",
     "minimal-ui"
   ],
   "orientation": "portrait",
   "background_color": "#080d18",
-  "theme_color": "#0a1020",
+  "theme_color": "#080d18",
   "categories": [
     "education",
     "productivity"
