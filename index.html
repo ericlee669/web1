@@ -7,6 +7,14 @@
 <meta name="description" content="输入 Pixiv 作品 ID，一键跳转到 pixiv.net/artworks/ 作品页。" />
 <meta name="color-scheme" content="dark" />
 <meta name="theme-color" content="#060a14" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" href="icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Pixiv 直达" />
+
 <link rel="preload" as="image" href="cover-desktop.webp" />
 <style>
   :root {
@@ -965,6 +973,14 @@
     if (data) { customBg = data; applyBg(); placeCard(); }
   }).catch(function () {});
 })();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js").catch(function () {});
+  });
+}
 </script>
 </body>
 </html>
