@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
@@ -500,7 +500,7 @@
   /* pwa-safe-area */
   html { background: #060a14; }
   body {
-    padding-top: env(safe-area-inset-top);
+    padding-top: max(10px, env(safe-area-inset-top));
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     background-color: #060a14;
@@ -993,3 +993,4 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
